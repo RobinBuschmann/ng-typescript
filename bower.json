@@ -1,5 +1,5 @@
 {
-  "name": "angular-typescript",
+  "name": "angular-typescript-decorators",
   "version": "0.0.5",
   "dependencies": {
     "angular": "^1.2.0",
@@ -8,7 +8,7 @@
   "devDependencies": {
     "angular-mocks": "^1.2.0"
   },
-  "authors": ["Jakub Strojewski <jakub.strojewski@gmail.com>"],
+  "authors": ["Jakub Strojewski <jakub.strojewski@gmail.com>", "Robin Buschmann <robinbuschmann@hotmail.de>"],
   "ignore": [
     "test",
     "ts",

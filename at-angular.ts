@@ -110,6 +110,85 @@ module at {
             angular.module(moduleName).factory(className, factory);
         };
     }
+
+    interface IComponentDirective extends IComponentOptions {
+        controller: Function|{prototype:{__attributes:any;__requirements:Array<string>}};
+        scope: any;
+        require: Array<string>;
+    }
+
+    export interface IComponentOptions {
+        templateUrl?: string;
+        controllerAs?: string;
+        moduleName: string;
+        componentName: string;
+    }
+
+    var componentDefaultOptions = {
+        restrict: 'E',
+        controllerAs: 'ctrl',
+        transclude: true,
+        bindToController: true,
+        controller: null
+    };
+
+    export function component(options: IComponentOptions): at.IClassAnnotationDecorator {
+        return (target: Function) => {
+
+            var config: IComponentDirective =
+                angular.extend(componentDefaultOptions, options || {});
+
+            config.controller = target;
+
+            // attributes and there requirements are defined in
+            // the "attribute" annotation
+            config.scope = target.prototype.__attributes || {};
+            config.require = target.prototype.__requirements || [];
+
+            angular.module(config.moduleName)
+                .directive(config.componentName, () => config);
+        }
+    }
+
+    export interface IAttributeOptions {
+        binding?: string;
+        name?: string;
+        isRequired?: boolean;
+    }
+
+    var bindings = {
+        'function': '@',
+        'default': '='
+    };
+
+    export function attribute(options: IAttributeOptions = {}) {
+
+        return (target: any, key: string) => {
+
+            var defaultOptions = {
+                binding: bindings[typeof target[key]] || bindings.default,
+                name: key,
+                isRequired: true
+            };
+
+            options = angular.extend(defaultOptions, options);
+
+            // will be used in "component" annotation
+            if (!target.__attributes) {
+                target.__attributes = {};
+            }
+            target.__attributes[key] = options.binding + options.name;
+
+            // will be used in "component" annotation
+            if(options.isRequired) {
+
+                if (!target.__requirements) {
+                    target.__requirements = [];
+                }
+                target.__requirements.push(options.name);
+            }
+        }
+    }
     /* tslint:enable:no-any */
 
 }

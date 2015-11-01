@@ -1,3 +1,4 @@
+///<reference path="../typings/angularjs/angular.d.ts"/>
 
 module at {
 
@@ -24,6 +25,11 @@ module at {
     export interface IClassAnnotationDecorator {
         (target: any): void;
         (t: any, key: string, index: number): void;
+    }
+
+    /* tslint:disable:no-any */
+    export interface IMemberAnnotationDecorator {
+        (target: any, key: string): void;
     }
 
     function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator {
@@ -112,7 +118,7 @@ module at {
     }
 
     interface IComponentDirective extends IComponentOptions {
-        controller: Function|{prototype:{__attributes:any;__requirements:Array<string>}};
+        controller: Function|{prototype:{__cAttributes:any;__cRequirements:Array<string>}};
         scope: any;
         require: Array<string>;
     }
@@ -142,8 +148,8 @@ module at {
 
             // attributes and there requirements are defined in
             // the "attribute" annotation
-            config.scope = target.prototype.__attributes || {};
-            config.require = target.prototype.__requirements || [];
+            config.scope = target.prototype.__cAttributes || {};
+            config.require = target.prototype.__cRequirements || [];
 
             angular.module(config.moduleName)
                 .directive(config.componentName, () => config);
@@ -161,7 +167,7 @@ module at {
         'default': '='
     };
 
-    export function attribute(options: IAttributeOptions = {}) {
+    export function attribute(options: IAttributeOptions = {}): IMemberAnnotationDecorator {
 
         return (target: any, key: string) => {
 
@@ -174,18 +180,18 @@ module at {
             options = angular.extend(defaultOptions, options);
 
             // will be used in "component" annotation
-            if (!target.__attributes) {
-                target.__attributes = {};
+            if (!target.__cAttributes) {
+                target.__cAttributes = {};
             }
-            target.__attributes[key] = options.binding + options.name;
+            target.__cAttributes[key] = options.binding + options.name;
 
             // will be used in "component" annotation
             if(options.isRequired) {
 
-                if (!target.__requirements) {
-                    target.__requirements = [];
+                if (!target.__cRequirements) {
+                    target.__cRequirements = [];
                 }
-                target.__requirements.push(options.name);
+                target.__cRequirements.push(options.name);
             }
         }
     }

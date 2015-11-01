@@ -12,6 +12,8 @@ pids
 
 # Teemporary directory
 .tmp/
+.ts-tmp/
+.grunt-ts-tmp/
 coverage/
 
 # Dependency directory

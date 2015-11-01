@@ -25,8 +25,8 @@
   ],
   "license": "WTFPL",
   "main": [
-    "at-angular.ts",
-    "at-angular-resource.ts"
+    "dist/at-angular.js",
+    "dist/at-angular-resource.js"
   ],
   "repository": {
     "type": "git",

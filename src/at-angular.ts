@@ -38,7 +38,7 @@ module at {
         };
     }
 
-    export function attachInjects(target: any, ...args: any[]): any {
+    export function AttachInjects(target: any, ...args: any[]): any {
         (target.$inject || []).forEach((item: string, index: number) => {
             target.prototype[(item.charAt(0) === '$' ? '$' : '$$') + item] = args[index];
         });
@@ -49,7 +49,7 @@ module at {
         (...args: any[]): IClassAnnotationDecorator;
     }
 
-    export function inject(...args: string[]): at.IClassAnnotationDecorator {
+    export function Inject(...args: string[]): at.IClassAnnotationDecorator {
         return (target: any, key?: string, index?: number): void => {
             if (angular.isNumber(index)) {
                 target.$inject = target.$inject || [];
@@ -64,7 +64,7 @@ module at {
         (moduleName: string, serviceName: string): IClassAnnotationDecorator;
     }
 
-    export function service(moduleName: string, serviceName: string): at.IClassAnnotationDecorator {
+    export function Service(moduleName: string, serviceName: string): at.IClassAnnotationDecorator {
         return instantiate(moduleName, serviceName, 'service');
     }
 
@@ -72,7 +72,7 @@ module at {
         (moduleName: string, ctrlName: string): IClassAnnotationDecorator;
     }
 
-    export function controller(moduleName: string, ctrlName: string): at.IClassAnnotationDecorator {
+    export function Controller(moduleName: string, ctrlName: string): at.IClassAnnotationDecorator {
         return instantiate(moduleName, ctrlName, 'controller');
     }
 
@@ -86,7 +86,7 @@ module at {
             const ctrlName: string = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
             /* istanbul ignore else */
             if (ctrlName) {
-                controller(moduleName, ctrlName)(target);
+                Controller(moduleName, ctrlName)(target);
             }
             config = directiveProperties.reduce((
                 config: angular.IDirective,
@@ -104,10 +104,10 @@ module at {
         (moduleName: string, className: string): IClassAnnotationDecorator;
     }
 
-    export function classFactory(moduleName: string, className: string): at.IClassAnnotationDecorator {
+    export function ClassFactory(moduleName: string, className: string): at.IClassAnnotationDecorator {
         return (target: any): void => {
             function factory(...args: any[]): any {
-                return at.attachInjects(target, ...args);
+                return at.AttachInjects(target, ...args);
             }
             /* istanbul ignore else */
             if (target.$inject && target.$inject.length > 0) {
@@ -138,7 +138,7 @@ module at {
         controller: null
     };
 
-    export function component(options: IComponentOptions): at.IClassAnnotationDecorator {
+    export function Component(options: IComponentOptions): at.IClassAnnotationDecorator {
         return (target: Function) => {
 
             var config: IComponentDirective =
@@ -167,7 +167,7 @@ module at {
         'default': '='
     };
 
-    export function attribute(options: IAttributeOptions = {}): IMemberAnnotationDecorator {
+    export function Attribute(options: IAttributeOptions = {}): IMemberAnnotationDecorator {
 
         return (target: any, key: string) => {
 

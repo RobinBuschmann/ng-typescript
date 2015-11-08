@@ -23,7 +23,7 @@ var at;
             angular.module(moduleName)[mode](name, target);
         };
     }
-    function attachInjects(target) {
+    function AttachInjects(target) {
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
@@ -33,8 +33,8 @@ var at;
         });
         return target;
     }
-    at.attachInjects = attachInjects;
-    function inject() {
+    at.AttachInjects = AttachInjects;
+    function Inject() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
@@ -49,21 +49,21 @@ var at;
             }
         };
     }
-    at.inject = inject;
-    function service(moduleName, serviceName) {
+    at.Inject = Inject;
+    function Service(moduleName, serviceName) {
         return instantiate(moduleName, serviceName, 'service');
     }
-    at.service = service;
-    function controller(moduleName, ctrlName) {
+    at.Service = Service;
+    function Controller(moduleName, ctrlName) {
         return instantiate(moduleName, ctrlName, 'controller');
     }
-    at.controller = controller;
+    at.Controller = Controller;
     function directive(moduleName, directiveName) {
         return function (target) {
             var config;
             var ctrlName = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
             if (ctrlName) {
-                controller(moduleName, ctrlName)(target);
+                Controller(moduleName, ctrlName)(target);
             }
             config = directiveProperties.reduce(function (config, property) {
                 return angular.isDefined(target[property]) ? angular.extend(config, (_a = {}, _a[property] = target[property], _a)) :
@@ -74,14 +74,14 @@ var at;
         };
     }
     at.directive = directive;
-    function classFactory(moduleName, className) {
+    function ClassFactory(moduleName, className) {
         return function (target) {
             function factory() {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i - 0] = arguments[_i];
                 }
-                return at.attachInjects.apply(at, [target].concat(args));
+                return at.AttachInjects.apply(at, [target].concat(args));
             }
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
@@ -89,7 +89,7 @@ var at;
             angular.module(moduleName).factory(className, factory);
         };
     }
-    at.classFactory = classFactory;
+    at.ClassFactory = ClassFactory;
     var componentDefaultOptions = {
         restrict: 'E',
         controllerAs: 'ctrl',
@@ -97,7 +97,7 @@ var at;
         bindToController: true,
         controller: null
     };
-    function component(options) {
+    function Component(options) {
         return function (target) {
             var config = angular.extend(componentDefaultOptions, options || {});
             config.controller = target;
@@ -107,12 +107,12 @@ var at;
                 .directive(config.componentName, function () { return config; });
         };
     }
-    at.component = component;
+    at.Component = Component;
     var bindings = {
         'function': '@',
         'default': '='
     };
-    function attribute(options) {
+    function Attribute(options) {
         if (options === void 0) { options = {}; }
         return function (target, key) {
             var defaultOptions = {
@@ -133,6 +133,6 @@ var at;
             }
         };
     }
-    at.attribute = attribute;
+    at.Attribute = Attribute;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular.js.map

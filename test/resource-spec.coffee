@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@resource (with @inject)', ->
+  describe '@resource (with @Inject)', ->
     $http = null
     $parse = null
     $resource = null
@@ -16,7 +16,7 @@ describe 'annotations:', ->
       $resource = _$resource_
       TestResourceOne = _TestResourceOne_
 
-    it 'should prepare decorated resource class as new service', ->
+    it 'should prepare decorated resource class as new Service', ->
 
       expect TestResourceOne
       .toBeDefined()
@@ -31,7 +31,7 @@ describe 'annotations:', ->
         expect TestResourceOne.prototype[key]
         .toEqual test.TestResourceOne.prototype[key]
 
-    it 'should assign proper $inject array to service constructor', ->
+    it 'should assign proper $Inject array to Service constructor', ->
 
       expect test.TestResourceOne.$inject
       .toEqual ['$http', '$parse']

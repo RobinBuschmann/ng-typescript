@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@directive (with @inject)', ->
+  describe '@directive (with @Inject)', ->
     $scope = null
     element = null
 
@@ -18,7 +18,7 @@ describe 'annotations:', ->
       expect at.directive
       .toEqual jasmine.any Function
 
-    it 'should instantiate decorated class as new service', ->
+    it 'should instantiate decorated class as new Service', ->
 
       expect element
       .toBeDefined()
@@ -26,7 +26,7 @@ describe 'annotations:', ->
       expect $scope.ctrl
       .toEqual jasmine.any test.TestComponentCtrl
 
-    it 'should assign proper $inject array to service constructor', ->
+    it 'should assign proper $Inject array to Service constructor', ->
 
       expect test.TestComponentCtrl.$inject
       .toEqual ['$scope', '$parse']

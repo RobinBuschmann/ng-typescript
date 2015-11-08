@@ -27,7 +27,7 @@ var at;
                     args[_i - 1] = arguments[_i];
                 }
                 var newResource = $resource(url, target.params, target.prototype.__rActions, options);
-                return at.attachInjects.apply(void 0, [angular.extend(newResource, angular.extend(target, newResource, {
+                return at.AttachInjects.apply(void 0, [angular.extend(newResource, angular.extend(target, newResource, {
                     prototype: angular.extend(newResource.prototype, angular.extend(target.prototype, {
                         $_Resource: newResource
                     }))

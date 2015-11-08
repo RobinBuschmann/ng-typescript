@@ -34,7 +34,7 @@ declare module angular {
         (...args: any[]): IServiceProvider;
     }
 
-    // All service providers extend this interface
+    // All Service providers extend this interface
     interface IServiceProvider {
         $get: any;
     }
@@ -249,12 +249,12 @@ declare module angular {
         isString(value: any): boolean;
         isUndefined(value: any): boolean;
         lowercase(str: string): string;
-        
+
         /**
          * Deeply extends the destination object dst by copying own enumerable properties from the src object(s) to dst. You can specify multiple src objects. If you want to preserve original objects, you can do so by passing an empty object as the target: var object = angular.merge({}, object1, object2).
-         * 
+         *
          * Unlike extend(), merge() recursively descends into object properties of source objects, performing a deep copy.
-         * 
+         *
          * @param dst Destination object.
          * @param src Source object(s).
          */
@@ -298,17 +298,17 @@ declare module angular {
         /**
          * Use this method to register work which needs to be performed on module loading.
          *
-         * @param configFn Execute this function on module load. Useful for service configuration.
+         * @param configFn Execute this function on module load. Useful for Service configuration.
          */
         config(configFn: Function): IModule;
         /**
          * Use this method to register work which needs to be performed on module loading.
          *
-         * @param inlineAnnotatedFunction Execute this function on module load. Useful for service configuration.
+         * @param inlineAnnotatedFunction Execute this function on module load. Useful for Service configuration.
          */
         config(inlineAnnotatedFunction: any[]): IModule;
         /**
-         * Register a constant service, such as a string, a number, an array, an object or a function, with the $injector. Unlike value it can be injected into a module configuration function (see config) and it cannot be overridden by an Angular decorator.
+         * Register a constant Service, such as a string, a number, an array, an object or a function, with the $injector. Unlike value it can be injected into a module configuration function (see config) and it cannot be overridden by an Angular decorator.
          *
          * @param name The name of the constant.
          * @param value The constant value.
@@ -316,7 +316,7 @@ declare module angular {
         constant(name: string, value: any): IModule;
         constant(object: Object): IModule;
         /**
-         * The $controller service is used by Angular to create new controllers.
+         * The $controller Service is used by Angular to create new controllers.
          *
          * This provider allows controller registration via the register method.
          *
@@ -325,7 +325,7 @@ declare module angular {
          */
         controller(name: string, controllerConstructor: Function): IModule;
         /**
-         * The $controller service is used by Angular to create new controllers.
+         * The $controller Service is used by Angular to create new controllers.
          *
          * This provider allows controller registration via the register method.
          *
@@ -350,14 +350,14 @@ declare module angular {
         directive(name: string, inlineAnnotatedFunction: any[]): IModule;
         directive(object: Object): IModule;
         /**
-         * Register a service factory, which will be called to return the service instance. This is short for registering a service where its provider consists of only a $get property, which is the given service factory function. You should use $provide.factory(getFn) if you do not need to configure your service in a provider.
+         * Register a Service factory, which will be called to return the Service instance. This is short for registering a Service where its provider consists of only a $get property, which is the given Service factory function. You should use $provide.factory(getFn) if you do not need to configure your Service in a provider.
          *
          * @param name The name of the instance.
          * @param $getFn The $getFn for the instance creation. Internally this is a short hand for $provide.provider(name, {$get: $getFn}).
          */
         factory(name: string, $getFn: Function): IModule;
         /**
-         * Register a service factory, which will be called to return the service instance. This is short for registering a service where its provider consists of only a $get property, which is the given service factory function. You should use $provide.factory(getFn) if you do not need to configure your service in a provider.
+         * Register a Service factory, which will be called to return the Service instance. This is short for registering a Service where its provider consists of only a $get property, which is the given Service factory function. You should use $provide.factory(getFn) if you do not need to configure your Service in a provider.
          *
          * @param name The name of the instance.
          * @param inlineAnnotatedFunction The $getFn for the instance creation. Internally this is a short hand for $provide.provider(name, {$get: $getFn}).
@@ -373,18 +373,18 @@ declare module angular {
         provider(name: string, providerObject: IServiceProvider): IModule;
         provider(object: Object): IModule;
         /**
-         * Run blocks are the closest thing in Angular to the main method. A run block is the code which needs to run to kickstart the application. It is executed after all of the service have been configured and the injector has been created. Run blocks typically contain code which is hard to unit-test, and for this reason should be declared in isolated modules, so that they can be ignored in the unit-tests.
+         * Run blocks are the closest thing in Angular to the main method. A run block is the code which needs to run to kickstart the application. It is executed after all of the Service have been configured and the injector has been created. Run blocks typically contain code which is hard to unit-test, and for this reason should be declared in isolated modules, so that they can be ignored in the unit-tests.
          */
         run(initializationFunction: Function): IModule;
         /**
-         * Run blocks are the closest thing in Angular to the main method. A run block is the code which needs to run to kickstart the application. It is executed after all of the service have been configured and the injector has been created. Run blocks typically contain code which is hard to unit-test, and for this reason should be declared in isolated modules, so that they can be ignored in the unit-tests.
+         * Run blocks are the closest thing in Angular to the main method. A run block is the code which needs to run to kickstart the application. It is executed after all of the Service have been configured and the injector has been created. Run blocks typically contain code which is hard to unit-test, and for this reason should be declared in isolated modules, so that they can be ignored in the unit-tests.
          */
         run(inlineAnnotatedFunction: any[]): IModule;
         service(name: string, serviceConstructor: Function): IModule;
         service(name: string, inlineAnnotatedConstructor: any[]): IModule;
         service(object: Object): IModule;
         /**
-         * Register a value service with the $injector, such as a string, a number, an array, an object or a function. This is short for registering a service where its provider's $get property is a factory function that takes no arguments and returns the value service.
+         * Register a value Service with the $injector, such as a string, a number, an array, an object or a function. This is short for registering a Service where its provider's $get property is a factory function that takes no arguments and returns the value Service.
 
            Value services are similar to constant services, except that they cannot be injected into a module configuration function (see config) but they can be overridden by an Angular decorator.
          *
@@ -395,9 +395,9 @@ declare module angular {
         value(object: Object): IModule;
 
         /**
-         * Register a service decorator with the $injector. A service decorator intercepts the creation of a service, allowing it to override or modify the behaviour of the service. The object returned by the decorator may be the original service, or a new service object which replaces or wraps and delegates to the original service.
-         * @param name The name of the service to decorate
-         * @param decorator This function will be invoked when the service needs to be instantiated and should return the decorated service instance. The function is called using the injector.invoke method and is therefore fully injectable. Local injection arguments: $delegate - The original service instance, which can be monkey patched, configured, decorated or delegated to.
+         * Register a Service decorator with the $injector. A Service decorator intercepts the creation of a Service, allowing it to override or modify the behaviour of the Service. The object returned by the decorator may be the original Service, or a new Service object which replaces or wraps and delegates to the original Service.
+         * @param name The name of the Service to decorate
+         * @param decorator This function will be invoked when the Service needs to be instantiated and should return the decorated Service instance. The function is called using the injector.invoke method and is therefore fully injectable. Local injection arguments: $delegate - The original Service instance, which can be monkey patched, configured, decorated or delegated to.
          */
         decorator(name:string, decoratorConstructor: Function): IModule;
         decorator(name:string, inlineAnnotatedConstructor: any[]): IModule;
@@ -544,7 +544,7 @@ declare module angular {
     }
 
     /**
-     * $rootScope - $rootScopeProvider - service in module ng
+     * $rootScope - $rootScopeProvider - Service in module ng
      * see https://docs.angularjs.org/api/ng/type/$rootScope.Scope and https://docs.angularjs.org/api/ng/service/$rootScope
      */
     interface IRootScopeService {
@@ -560,11 +560,11 @@ declare module angular {
 
         /**
          * Dispatches an event name downwards to all child scopes (and their children) notifying the registered $rootScope.Scope listeners.
-         * 
+         *
          * The event life cycle starts at the scope on which $broadcast was called. All listeners listening for name event on this scope get notified. Afterwards, the event propagates to all direct and indirect scopes of the current scope and calls all registered listeners along the way. The event cannot be canceled.
-         * 
-         * Any exception emitted from the listeners will be passed onto the $exceptionHandler service.
-         * 
+         *
+         * Any exception emitted from the listeners will be passed onto the $exceptionHandler Service.
+         *
          * @param name Event name to broadcast.
          * @param args Optional one or more arguments which will be passed onto the event listeners.
          */
@@ -576,8 +576,8 @@ declare module angular {
          *
          * The event life cycle starts at the scope on which $emit was called. All listeners listening for name event on this scope get notified. Afterwards, the event traverses upwards toward the root scope and calls all registered listeners along the way. The event will stop propagating if one of the listeners cancels it.
          *
-         * Any exception emitted from the listeners will be passed onto the $exceptionHandler service.
-         * 
+         * Any exception emitted from the listeners will be passed onto the $exceptionHandler Service.
+         *
          * @param name Event name to emit.
          * @param args Optional one or more arguments which will be passed onto the event listeners.
          */
@@ -756,17 +756,17 @@ declare module angular {
     }
 
     /**
-     * $filter - $filterProvider - service in module ng
-     * 
+     * $filter - $filterProvider - Service in module ng
+     *
      * Filters are used for formatting data displayed to the user.
-     * 
+     *
      * see https://docs.angularjs.org/api/ng/service/$filter
      */
     interface IFilterService {
         /**
          * Usage:
          * $filter(name);
-         * 
+         *
          * @param name Name of the filter function to retrieve
          */
         (name: string): Function;
@@ -774,15 +774,15 @@ declare module angular {
 
     /**
      * $filterProvider - $filter - provider in module ng
-     * 
+     *
      * Filters are just functions which transform input to an output. However filters need to be Dependency Injected. To achieve this a filter definition consists of a factory function which is annotated with dependencies and is responsible for creating a filter function.
-     * 
+     *
      * see https://docs.angularjs.org/api/ng/provider/$filterProvider
      */
     interface IFilterProvider extends IServiceProvider {
         /**
          * register(name);
-         * 
+         *
          * @param name Name of the filter function, or an object map of filters where the keys are the filter names and the values are the filter factories. Note: Filter names must be valid angular Expressions identifiers, such as uppercase or orderBy. Names with special characters, such as hyphens and dots, are not allowed. If you wish to namespace your filters, then you can use capitalization (myappSubsectionFilterx) or underscores (myapp_subsection_filterx).
          */
         register(name: string | {}): IServiceProvider;
@@ -888,7 +888,7 @@ declare module angular {
     }
 
     /**
-     * $location - $locationProvider - service in module ng
+     * $location - $locationProvider - Service in module ng
      * see https://docs.angularjs.org/api/ng/service/$location
      */
     interface ILocationService {
@@ -979,7 +979,7 @@ declare module angular {
         (value: T): void;
     }
     /**
-     * $q - service in module ng
+     * $q - Service in module ng
      * A promise/deferred implementation inspired by Kris Kowal's Q.
      * See http://docs.angularjs.org/api/ng/service/$q
      */
@@ -1072,32 +1072,32 @@ declare module angular {
     }
 
     /**
-     * $cacheFactory - service in module ng
-     * 
+     * $cacheFactory - Service in module ng
+     *
      * Factory that constructs Cache objects and gives access to them.
-     * 
+     *
      * see https://docs.angularjs.org/api/ng/service/$cacheFactory
      */
     interface ICacheFactoryService {
         /**
          * Factory that constructs Cache objects and gives access to them.
-         * 
+         *
          * @param cacheId Name or id of the newly created cache.
          * @param optionsMap Options object that specifies the cache behavior. Properties:
-         * 
+         *
          * capacity — turns the cache into LRU cache.
          */
         (cacheId: string, optionsMap?: { capacity?: number; }): ICacheObject;
 
         /**
-         * Get information about all the caches that have been created. 
+         * Get information about all the caches that have been created.
          * @returns key-value map of cacheId to the result of calling cache#info
          */
         info(): any;
 
         /**
          * Get access to a cache object by the cacheId used when it was created.
-         * 
+         *
          * @param cacheId Name or id of a cache to access.
          */
         get(cacheId: string): ICacheObject;
@@ -1105,9 +1105,9 @@ declare module angular {
 
     /**
      * $cacheFactory.Cache - type in module ng
-     * 
+     *
      * A cache object used to store and retrieve data, primarily used by $http and the script directive to cache templates and other data.
-     * 
+     *
      * see https://docs.angularjs.org/api/ng/type/$cacheFactory.Cache
      */
     interface ICacheObject {
@@ -1130,9 +1130,9 @@ declare module angular {
 
         /**
          * Inserts a named entry into the Cache object to be retrieved later, and incrementing the size of the cache if the key was not already present in the cache. If behaving like an LRU cache, it will also remove stale entries from the set.
-         * 
+         *
          * It will not insert undefined values into the cache.
-         * 
+         *
          * @param key the key under which the cached data is stored.
          * @param value the value to store alongside the key. If it is undefined, the key will not be stored.
          */
@@ -1140,14 +1140,14 @@ declare module angular {
 
         /**
          * Retrieves named data stored in the Cache object.
-         * 
+         *
          * @param key the key of the data to be retrieved
          */
         get(key: string): any;
 
         /**
          * Removes an entry from the Cache object.
-         * 
+         *
          * @param key the key of the entry to be removed
          */
         remove(key: string): void;
@@ -1162,7 +1162,7 @@ declare module angular {
          */
         destroy(): void;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     // CompileService
     // see http://docs.angularjs.org/api/ng.$compile
@@ -1435,7 +1435,7 @@ declare module angular {
     ///////////////////////////////////////////////////////////////////////////
     // HttpBackendService
     // see http://docs.angularjs.org/api/ng.$httpBackend
-    // You should never need to use this service directly.
+    // You should never need to use this Service directly.
     ///////////////////////////////////////////////////////////////////////////
     interface IHttpBackendService {
         // XXX Perhaps define callback signature in the future
@@ -1524,7 +1524,7 @@ declare module angular {
     }
 
     /**
-     * $templateRequest service
+     * $templateRequest Service
      * see http://docs.angularjs.org/api/ng/service/$templateRequest
      */
     interface ITemplateRequestService {
@@ -1677,7 +1677,7 @@ declare module angular {
             // implementation does not return anything.
             // constant(name: string, value: any): any;
             /**
-             * Register a constant service, such as a string, a number, an array, an object or a function, with the $injector. Unlike value it can be injected into a module configuration function (see config) and it cannot be overridden by an Angular decorator.
+             * Register a constant Service, such as a string, a number, an array, an object or a function, with the $injector. Unlike value it can be injected into a module configuration function (see config) and it cannot be overridden by an Angular decorator.
              *
              * @param name The name of the constant.
              * @param value The constant value.
@@ -1685,21 +1685,21 @@ declare module angular {
             constant(name: string, value: any): void;
 
             /**
-             * Register a service decorator with the $injector. A service decorator intercepts the creation of a service, allowing it to override or modify the behaviour of the service. The object returned by the decorator may be the original service, or a new service object which replaces or wraps and delegates to the original service.
+             * Register a Service decorator with the $injector. A Service decorator intercepts the creation of a Service, allowing it to override or modify the behaviour of the Service. The object returned by the decorator may be the original Service, or a new Service object which replaces or wraps and delegates to the original Service.
              *
-             * @param name The name of the service to decorate.
-             * @param decorator This function will be invoked when the service needs to be instantiated and should return the decorated service instance. The function is called using the injector.invoke method and is therefore fully injectable. Local injection arguments:
+             * @param name The name of the Service to decorate.
+             * @param decorator This function will be invoked when the Service needs to be instantiated and should return the decorated Service instance. The function is called using the injector.invoke method and is therefore fully injectable. Local injection arguments:
              *
-             * $delegate - The original service instance, which can be monkey patched, configured, decorated or delegated to.
+             * $delegate - The original Service instance, which can be monkey patched, configured, decorated or delegated to.
              */
             decorator(name: string, decorator: Function): void;
             /**
-             * Register a service decorator with the $injector. A service decorator intercepts the creation of a service, allowing it to override or modify the behaviour of the service. The object returned by the decorator may be the original service, or a new service object which replaces or wraps and delegates to the original service.
+             * Register a Service decorator with the $injector. A Service decorator intercepts the creation of a Service, allowing it to override or modify the behaviour of the Service. The object returned by the decorator may be the original Service, or a new Service object which replaces or wraps and delegates to the original Service.
              *
-             * @param name The name of the service to decorate.
-             * @param inlineAnnotatedFunction This function will be invoked when the service needs to be instantiated and should return the decorated service instance. The function is called using the injector.invoke method and is therefore fully injectable. Local injection arguments:
+             * @param name The name of the Service to decorate.
+             * @param inlineAnnotatedFunction This function will be invoked when the Service needs to be instantiated and should return the decorated Service instance. The function is called using the injector.invoke method and is therefore fully injectable. Local injection arguments:
              *
-             * $delegate - The original service instance, which can be monkey patched, configured, decorated or delegated to.
+             * $delegate - The original Service instance, which can be monkey patched, configured, decorated or delegated to.
              */
             decorator(name: string, inlineAnnotatedFunction: any[]): void;
             factory(name: string, serviceFactoryFunction: Function): IServiceProvider;

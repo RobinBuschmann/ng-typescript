@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@controller (with @inject)', ->
+  describe '@controller (with @Inject)', ->
     $scope = null
     $parse = null
     firstTestCtrl = null
@@ -19,7 +19,7 @@ describe 'annotations:', ->
       expect at.controller
       .toEqual jasmine.any Function
 
-    it 'should instantiate decorated class as new service', ->
+    it 'should instantiate decorated class as new Service', ->
 
       expect firstTestCtrl
       .toBeDefined()
@@ -27,12 +27,12 @@ describe 'annotations:', ->
       expect firstTestCtrl
       .toEqual jasmine.any test.FirstTestCtrl
 
-    it 'should assign proper $inject array to service constructor', ->
+    it 'should assign proper $Inject array to Service constructor', ->
 
       expect test.FirstTestCtrl.$inject
       .toEqual ['$scope', '$parse']
 
-    it 'should make proper dependencies are passed to service constructor on instantiation', ->
+    it 'should make proper dependencies are passed to Service constructor on instantiation', ->
 
       expect firstTestCtrl.$$parse
       .toBe $parse

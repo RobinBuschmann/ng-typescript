@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@classFactory (with @inject)', ->
+  describe '@classFactory (with @Inject)', ->
     $http = null
     $parse = null
     TestClassOne = null
@@ -14,7 +14,7 @@ describe 'annotations:', ->
       $parse = _$parse_
       TestClassOne = _TestClassOne_
 
-    it 'should create class as a service', ->
+    it 'should create class as a Service', ->
 
       expect TestClassOne
       .toBeDefined()
@@ -22,7 +22,7 @@ describe 'annotations:', ->
       expect TestClassOne
       .toBe test.TestClassOne
 
-    it 'should assign proper $inject array to service constructor', ->
+    it 'should assign proper $Inject array to Service constructor', ->
 
       expect test.TestClassOne.$inject
       .toEqual ['$http', '$parse']

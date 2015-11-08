@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@inject', ->
+  describe '@Inject', ->
     $http = null
     $parse = null
     testServiceOne = null
@@ -16,10 +16,10 @@ describe 'annotations:', ->
 
     it 'should be defined', ->
 
-      expect at.inject
+      expect at.Inject
       .toEqual jasmine.any Function
 
-    it 'should assign proper $inject array to service constructor', ->
+    it 'should assign proper $Inject array to Service constructor', ->
 
       expect testServiceOne
       .toEqual jasmine.any test.TestServiceOne
@@ -27,7 +27,7 @@ describe 'annotations:', ->
       expect test.TestServiceOne.$inject
       .toEqual ['$http', '$parse']
 
-    it 'should make proper dependencies are passed to service constructor on instantiation', ->
+    it 'should make proper dependencies are passed to Service constructor on instantiation', ->
 
       expect testServiceOne.$$http
       .toBe $http

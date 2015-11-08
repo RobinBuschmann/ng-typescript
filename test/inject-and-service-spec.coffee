@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@inject & @service together', ->
+  describe '@Inject & @Service together', ->
     $http = null
     $parse = null
     testServiceThree = null
@@ -14,7 +14,7 @@ describe 'annotations:', ->
       $parse = _$parse_
       testServiceThree = _testServiceThree_
 
-    it 'should instantiate decorated class as new service', ->
+    it 'should instantiate decorated class as new Service', ->
 
       expect testServiceThree
       .toBeDefined()
@@ -22,12 +22,12 @@ describe 'annotations:', ->
       expect testServiceThree
       .toEqual jasmine.any test.TestServiceThree
 
-    it 'should assign proper $inject array to service constructor', ->
+    it 'should assign proper $Inject array to Service constructor', ->
 
       expect test.TestServiceThree.$inject
       .toEqual ['$http', '$parse']
 
-    it 'should make proper dependencies are passed to service constructor on instantiation', ->
+    it 'should make proper dependencies are passed to Service constructor on instantiation', ->
 
       expect testServiceThree.$$http
       .toBe $http

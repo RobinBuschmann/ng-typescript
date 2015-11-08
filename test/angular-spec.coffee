@@ -4,10 +4,10 @@ describe 'annotations:', ->
 
   it 'should be defined', ->
 
-    expect at.attachInjects
+    expect at.AttachInjects
     .toEqual jasmine.any Function
 
-  describe 'attachInjects', ->
+  describe 'AttachInjects', ->
     target1 = null
     target2 = null
     target3 = null
@@ -19,9 +19,9 @@ describe 'annotations:', ->
       target1.$inject = ['dep1', 'dep2']
       target2.$inject = ['dep3']
       target3.$inject = null
-      at.attachInjects target1, 'dep1', 'dep2'
-      at.attachInjects target2, 'dep3'
-      at.attachInjects target3, 'dep1', 'dep2', 'dep3'
+      at.AttachInjects target1, 'dep1', 'dep2'
+      at.AttachInjects target2, 'dep3'
+      at.AttachInjects target3, 'dep1', 'dep2', 'dep3'
 
     it 'should assign proper $inject array to target.prototype', ->
 

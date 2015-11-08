@@ -48,7 +48,7 @@ module at {
         return (target: any): void => {
             function resourceClassFactory($resource: ResourceService, ...args: any[]): any {
                 const newResource: ResourceClass = $resource(url, target.params, target.prototype.__rActions, options);
-                return attachInjects(angular.extend(newResource, angular.extend(target, newResource, {
+                return AttachInjects(angular.extend(newResource, angular.extend(target, newResource, {
                     prototype: angular.extend(newResource.prototype, angular.extend(target.prototype, {
                         /* tslint:disable:variable-name */
                         $_Resource: newResource

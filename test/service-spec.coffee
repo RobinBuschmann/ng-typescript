@@ -4,7 +4,7 @@ describe 'annotations:', ->
 
   beforeEach module 'test'
 
-  describe '@service', ->
+  describe '@Service', ->
     deps = null
     testServiceTwo = null
 
@@ -16,10 +16,10 @@ describe 'annotations:', ->
 
     it 'should be defined', ->
 
-      expect at.service
+      expect at.Service
       .toEqual jasmine.any Function
 
-    it 'should instantiate decorated class as new service', ->
+    it 'should instantiate decorated class as new Service', ->
 
       expect testServiceTwo
       .toBeDefined()
@@ -27,7 +27,7 @@ describe 'annotations:', ->
       expect testServiceTwo
       .toEqual jasmine.any test.TestServiceTwo
 
-    it 'should pass proper dependencies (based on static member "$inject") to service constructor', ->
+    it 'should pass proper dependencies (based on static member "$inject") to Service constructor', ->
 
       for dep in test.TestServiceTwo.$inject
         expect testServiceTwo["$$#{ dep.replace('$', '') }"]

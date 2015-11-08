@@ -11,7 +11,6 @@ module at {
     'use strict';
 
     /* tslint:disable:no-any */
-    type ResourceClass = angular.resource.IResourceClass<any>;
     type ResourceService = angular.resource.IResourceService;
 
     /* istanbul ignore next */
@@ -20,7 +19,7 @@ module at {
     }
 
     /* istanbul ignore next */
-    export class Resource<T> implements angular.resource.IResource<T> {
+    export class ResourceClass<T> implements angular.resource.IResource<T> {
         public $promise : angular.IPromise<T>;
         private $promiseArray : angular.IPromise<IResourceArray<T>>;
         public $resolved : boolean;
@@ -44,10 +43,10 @@ module at {
         (moduleName: string, className: string): IClassAnnotationDecorator;
     }
 
-    export function resource(moduleName: string, className: string, url: string, options?: any): IClassAnnotationDecorator {
+    export function Resource(moduleName: string, className: string, url: string, options?: any): IClassAnnotationDecorator {
         return (target: any): void => {
             function resourceClassFactory($resource: ResourceService, ...args: any[]): any {
-                const newResource: ResourceClass = $resource(url, target.params, target.prototype.__rActions, options);
+                const newResource: angular.resource.IResourceClass<any> = $resource(url, target.params, target.prototype.__rActions, options);
                 return AttachInjects(angular.extend(newResource, angular.extend(target, newResource, {
                     prototype: angular.extend(newResource.prototype, angular.extend(target.prototype, {
                         /* tslint:disable:variable-name */
@@ -62,7 +61,7 @@ module at {
         };
     }
 
-    export function action(options: angular.resource.IActionDescriptor): IMemberAnnotationDecorator {
+    export function Action(options: angular.resource.IActionDescriptor): IMemberAnnotationDecorator {
 
         return (target: any, key: string): void => {
 

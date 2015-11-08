@@ -7,19 +7,19 @@ var at;
     function combineResource(instance, model) {
         angular.extend(instance, instance.$_Resource(model));
     }
-    var Resource = (function () {
-        function Resource(model) {
+    var ResourceClass = (function () {
+        function ResourceClass(model) {
             combineResource(this, model);
         }
-        Resource.prototype.$get = function (params) { return this.$promise; };
-        Resource.prototype.$query = function (params) { return this.$promiseArray; };
-        Resource.prototype.$remove = function (params) { return this.$promise; };
-        Resource.prototype.$save = function (params) { return this.$promise; };
-        Resource.prototype.$delete = function (params) { return this.$promise; };
-        return Resource;
+        ResourceClass.prototype.$get = function (params) { return this.$promise; };
+        ResourceClass.prototype.$query = function (params) { return this.$promiseArray; };
+        ResourceClass.prototype.$remove = function (params) { return this.$promise; };
+        ResourceClass.prototype.$save = function (params) { return this.$promise; };
+        ResourceClass.prototype.$delete = function (params) { return this.$promise; };
+        return ResourceClass;
     })();
-    at.Resource = Resource;
-    function resource(moduleName, className, url, options) {
+    at.ResourceClass = ResourceClass;
+    function Resource(moduleName, className, url, options) {
         return function (target) {
             function resourceClassFactory($resource) {
                 var args = [];
@@ -37,8 +37,8 @@ var at;
             angular.module(moduleName).factory(className, resourceClassFactory);
         };
     }
-    at.resource = resource;
-    function action(options) {
+    at.Resource = Resource;
+    function Action(options) {
         return function (target, key) {
             if (!target.__rActions) {
                 target.__rActions = {};
@@ -46,6 +46,6 @@ var at;
             target.__rActions[key] = options;
         };
     }
-    at.action = action;
+    at.Action = Action;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular-resource.js.map

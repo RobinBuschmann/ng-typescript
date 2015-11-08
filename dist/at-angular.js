@@ -54,11 +54,19 @@ var at;
         return instantiate(moduleName, serviceName, 'service');
     }
     at.Service = Service;
+    function Provider(moduleName, serviceName) {
+        return instantiate(moduleName, serviceName, 'provider');
+    }
+    at.Provider = Provider;
+    function Factory(moduleName, serviceName) {
+        return instantiate(moduleName, serviceName, 'factory');
+    }
+    at.Factory = Factory;
     function Controller(moduleName, ctrlName) {
         return instantiate(moduleName, ctrlName, 'controller');
     }
     at.Controller = Controller;
-    function directive(moduleName, directiveName) {
+    function Directive(moduleName, directiveName) {
         return function (target) {
             var config;
             var ctrlName = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
@@ -73,7 +81,7 @@ var at;
             angular.module(moduleName).directive(directiveName, function () { return (config); });
         };
     }
-    at.directive = directive;
+    at.Directive = Directive;
     function ClassFactory(moduleName, className) {
         return function (target) {
             function factory() {

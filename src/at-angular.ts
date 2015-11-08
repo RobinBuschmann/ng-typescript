@@ -68,6 +68,22 @@ module at {
         return instantiate(moduleName, serviceName, 'service');
     }
 
+    export interface IProviderAnnotation {
+        (moduleName: string, serviceName: string): IClassAnnotationDecorator;
+    }
+
+    export function Provider(moduleName: string, serviceName: string): at.IClassAnnotationDecorator {
+        return instantiate(moduleName, serviceName, 'provider');
+    }
+
+    export interface IFactoryAnnotation {
+        (moduleName: string, serviceName: string): IClassAnnotationDecorator;
+    }
+
+    export function Factory(moduleName: string, serviceName: string): at.IClassAnnotationDecorator {
+        return instantiate(moduleName, serviceName, 'factory');
+    }
+
     export interface IControllerAnnotation {
         (moduleName: string, ctrlName: string): IClassAnnotationDecorator;
     }
@@ -80,7 +96,7 @@ module at {
         (moduleName: string, directiveName: string): IClassAnnotationDecorator;
     }
 
-    export function directive(moduleName: string, directiveName: string): at.IClassAnnotationDecorator {
+    export function Directive(moduleName: string, directiveName: string): at.IClassAnnotationDecorator {
         return (target: any): void => {
             let config: angular.IDirective;
             const ctrlName: string = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;

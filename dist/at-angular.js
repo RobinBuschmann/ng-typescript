@@ -107,7 +107,7 @@ var at;
     };
     function Component(options) {
         return function (target) {
-            var config = angular.extend(componentDefaultOptions, options || {});
+            var config = angular.extend({}, componentDefaultOptions, options || {});
             config.controller = target;
             config.scope = target.prototype.__cAttributes || {};
             config.require = target.prototype.__cRequirements || [];
@@ -128,7 +128,7 @@ var at;
                 name: key,
                 isRequired: true
             };
-            options = angular.extend(defaultOptions, options);
+            options = angular.extend({}, defaultOptions, options);
             if (!target.__cAttributes) {
                 target.__cAttributes = {};
             }

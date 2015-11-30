@@ -158,7 +158,7 @@ module at {
         return (target: Function) => {
 
             var config: IComponentDirective =
-                angular.extend(componentDefaultOptions, options || {});
+                angular.extend({}, componentDefaultOptions, options || {});
 
             config.controller = target;
 
@@ -193,7 +193,7 @@ module at {
                 isRequired: true
             };
 
-            options = angular.extend(defaultOptions, options);
+            options = angular.extend({}, defaultOptions, options);
 
             // will be used in "component" annotation
             if (!target.__cAttributes) {

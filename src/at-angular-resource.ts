@@ -84,8 +84,8 @@ module at {
     }
 
     export interface IActionOptions extends angular.resource.IActionDescriptor {
-        mapper: (entry: any, ...dependencies) => any;
-        mapperDependencies: Array<string>;
+        mapper?: (entry: any, ...dependencies) => any;
+        mapperDependencies?: Array<string>;
     }
 
     var REMOVE_STARTING_$_REGEX = /^\$/;

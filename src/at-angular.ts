@@ -134,13 +134,14 @@ module at {
     }
 
     interface IComponentDirective extends IComponentOptions {
-        controller: Function|{prototype:{__cAttributes:any;__cRequirements:Array<string>}};
+        controller: Function|{prototype:{__componentAttributes:any;__componentRequirements:Array<string>}};
         scope: any;
         require: Array<string>;
     }
 
     export interface IComponentOptions {
         templateUrl?: string;
+        template?: string;
         controllerAs?: string;
         moduleName: string;
         componentName: string;
@@ -164,8 +165,8 @@ module at {
 
             // attributes and there requirements are defined in
             // the "attribute" annotation
-            config.scope = target.prototype.__cAttributes || {};
-            config.require = target.prototype.__cRequirements || [];
+            config.scope = target.prototype.__componentAttributes || {};
+            config.require = target.prototype.__componentRequirements || [];
 
             angular.module(config.moduleName)
                 .directive(config.componentName, () => config);
@@ -196,18 +197,18 @@ module at {
             options = angular.extend({}, defaultOptions, options);
 
             // will be used in "component" annotation
-            if (!target.__cAttributes) {
-                target.__cAttributes = {};
+            if (!target.__componentAttributes) {
+                target.__componentAttributes = {};
             }
-            target.__cAttributes[key] = options.binding + options.name;
+            target.__componentAttributes[key] = options.binding + options.name;
 
             // will be used in "component" annotation
             if(options.isRequired) {
 
-                if (!target.__cRequirements) {
-                    target.__cRequirements = [];
+                if (!target.__componentRequirements) {
+                    target.__componentRequirements = [];
                 }
-                target.__cRequirements.push(options.name);
+                target.__componentRequirements.push(options.name);
             }
         }
     }

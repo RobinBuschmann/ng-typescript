@@ -11,11 +11,6 @@ var at;
         function ResourceClass(model) {
             combineResource(this, model);
         }
-        ResourceClass.prototype.$get = function (params) { return this.$promise; };
-        ResourceClass.prototype.$query = function (params) { return this.$promiseArray; };
-        ResourceClass.prototype.$remove = function (params) { return this.$promise; };
-        ResourceClass.prototype.$save = function (params) { return this.$promise; };
-        ResourceClass.prototype.$delete = function (params) { return this.$promise; };
         return ResourceClass;
     })();
     at.ResourceClass = ResourceClass;
@@ -26,8 +21,9 @@ var at;
                 for (var _i = 2; _i < arguments.length; _i++) {
                     args[_i - 2] = arguments[_i];
                 }
-                prepareActionDataMapping(target.prototype.__rActions, $injector);
-                var newResource = $resource(url, target.params, target.prototype.__rActions, options);
+                if (target.prototype.__resourceActions)
+                    prepareActionDataMapping(target.prototype.__resourceActions, $injector);
+                var newResource = $resource(url, target.prototype.__defaultResourceParams, target.prototype.__resourceActions, options);
                 return at.AttachInjects.apply(void 0, [angular.extend(newResource, angular.extend(target, newResource, {
                     prototype: angular.extend(newResource.prototype, extendWithPrototype({}, angular.extend(target.prototype, {
                         $_Resource: newResource
@@ -50,11 +46,11 @@ var at;
     var REMOVE_STARTING_$_REGEX = /^\$/;
     function Action(options) {
         return function (target, key) {
-            if (!target.__rActions) {
-                target.__rActions = {};
+            if (!target.__resourceActions) {
+                target.__resourceActions = {};
             }
             key = key.replace(REMOVE_STARTING_$_REGEX, '');
-            target.__rActions[key] = options;
+            target.__resourceActions[key] = options;
         };
     }
     at.Action = Action;
@@ -80,5 +76,14 @@ var at;
             }
         });
     }
+    function UseAsDefault(defaultValue) {
+        return function (target, key) {
+            if (!target.__defaultResourceParams) {
+                target.__defaultResourceParams = {};
+            }
+            target.__defaultResourceParams[key] = defaultValue;
+        };
+    }
+    at.UseAsDefault = UseAsDefault;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular-resource.js.map

@@ -24,11 +24,12 @@ module at {
         private $promiseArray : angular.IPromise<IResourceArray<T>>;
         public $resolved : boolean;
         constructor(model?: any) { combineResource(this, model); }
-        public $get(params?: Object): angular.IPromise<T> { return this.$promise; }
-        public $query(params?: Object): angular.IPromise<IResourceArray<T>> { return this.$promiseArray; }
-        public $remove(params?: Object): angular.IPromise<T> { return this.$promise; }
-        public $save(params?: Object): angular.IPromise<T> { return this.$promise; }
-        public $delete(params?: Object): angular.IPromise<T> { return this.$promise; }
+
+        $get: () => angular.IPromise<T>;
+        $query: () => angular.IPromise<IResourceArray<T>>;
+        $save: () => angular.IPromise<T>;
+        $remove: () => angular.IPromise<T>;
+        $delete: () => angular.IPromise<T>;
     }
 
     /* istanbul ignore next */
@@ -47,9 +48,11 @@ module at {
         return (target: any): void => {
             function resourceClassFactory($resource: ResourceService, $injector: ng.auto.IInjectorService, ...args: any[]): any {
 
-                prepareActionDataMapping(target.prototype.__rActions, $injector);
+                if(target.prototype.__resourceActions) prepareActionDataMapping(target.prototype.__resourceActions, $injector);
 
-                const newResource: angular.resource.IResourceClass<any> = $resource(url, target.params, target.prototype.__rActions, options);
+                const newResource: angular.resource.IResourceClass<any> =
+                    $resource(url, target.prototype.__defaultResourceParams,
+                        target.prototype.__resourceActions, options);
 
                 // TODO: Quick fix INHERITANCE PROBLEM
 
@@ -93,13 +96,13 @@ module at {
 
         return (target: any, key: string): void => {
 
-            if(!target.__rActions) {
-                target.__rActions = {};
+            if(!target.__resourceActions) {
+                target.__resourceActions = {};
             }
 
             key = key.replace(REMOVE_STARTING_$_REGEX, '');
 
-            target.__rActions[key] = options;
+            target.__resourceActions[key] = options;
         }
     }
 
@@ -132,6 +135,18 @@ module at {
             }
         });
 
+    }
+
+    export function UseAsDefault(defaultValue: any): IMemberAnnotationDecorator {
+
+        return (target: any, key: string): void => {
+
+            if(!target.__defaultResourceParams) {
+                target.__defaultResourceParams = {};
+            }
+
+            target.__defaultResourceParams[key] = defaultValue;
+        }
     }
 
     /* tslint:enable:no-any */

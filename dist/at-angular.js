@@ -109,8 +109,8 @@ var at;
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
             config.controller = target;
-            config.scope = target.prototype.__cAttributes || {};
-            config.require = target.prototype.__cRequirements || [];
+            config.scope = target.prototype.__componentAttributes || {};
+            config.require = target.prototype.__componentRequirements || [];
             angular.module(config.moduleName)
                 .directive(config.componentName, function () { return config; });
         };
@@ -129,15 +129,15 @@ var at;
                 isRequired: true
             };
             options = angular.extend({}, defaultOptions, options);
-            if (!target.__cAttributes) {
-                target.__cAttributes = {};
+            if (!target.__componentAttributes) {
+                target.__componentAttributes = {};
             }
-            target.__cAttributes[key] = options.binding + options.name;
+            target.__componentAttributes[key] = options.binding + options.name;
             if (options.isRequired) {
-                if (!target.__cRequirements) {
-                    target.__cRequirements = [];
+                if (!target.__componentRequirements) {
+                    target.__componentRequirements = [];
                 }
-                target.__cRequirements.push(options.name);
+                target.__componentRequirements.push(options.name);
             }
         };
     }

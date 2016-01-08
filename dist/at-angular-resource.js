@@ -76,12 +76,12 @@ var at;
             }
         });
     }
-    function UseAsDefault(defaultValue) {
+    function UseAsDefault(urlParamKey) {
         return function (target, key) {
             if (!target.__defaultResourceParams) {
                 target.__defaultResourceParams = {};
             }
-            target.__defaultResourceParams[key] = defaultValue;
+            target.__defaultResourceParams[urlParamKey || key] = '@' + key;
         };
     }
     at.UseAsDefault = UseAsDefault;

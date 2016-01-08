@@ -137,7 +137,7 @@ module at {
 
     }
 
-    export function UseAsDefault(defaultValue: any): IMemberAnnotationDecorator {
+    export function UseAsDefault(urlParamKey?: string): IMemberAnnotationDecorator {
 
         return (target: any, key: string): void => {
 
@@ -145,7 +145,7 @@ module at {
                 target.__defaultResourceParams = {};
             }
 
-            target.__defaultResourceParams[key] = defaultValue;
+            target.__defaultResourceParams[urlParamKey || key] = '@' + key;
         }
     }
 

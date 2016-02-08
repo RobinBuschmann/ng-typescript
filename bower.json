@@ -1,5 +1,5 @@
 {
-  "name": "angular-typescript-decorators",
+  "name": "angular-typescript",
   "version": "0.0.5",
   "dependencies": {
     "angular": "^1.2.0",
@@ -25,8 +25,7 @@
   ],
   "license": "WTFPL",
   "main": [
-    "dist/at-angular.js",
-    "dist/at-angular-resource.js"
+    "dist/at-angular.js"
   ],
   "repository": {
     "type": "git",

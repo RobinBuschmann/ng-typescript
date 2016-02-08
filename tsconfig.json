@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "sourceMap": true,
+    "rootDir": "src/",
+    "outDir": "dist/"
+  },
+
+  "exclude": [
+    "node_modules",
+    ".grunt-ts-tmp",
+    "dist",
+    "documentation",
+    "test"
+  ]
+}

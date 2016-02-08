@@ -1,4 +1,4 @@
-///<reference path="../typings/angularjs/angular.d.ts"/>
+///<reference path="../typings/tsd.d.ts"/>
 var at;
 (function (at) {
     'use strict';
@@ -70,12 +70,13 @@ var at;
         return function (target) {
             var config;
             var ctrlName = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
+            /* istanbul ignore else */
             if (ctrlName) {
                 Controller(moduleName, ctrlName)(target);
             }
             config = directiveProperties.reduce(function (config, property) {
                 return angular.isDefined(target[property]) ? angular.extend(config, (_a = {}, _a[property] = target[property], _a)) :
-                    config;
+                    config; /* istanbul ignore next */
                 var _a;
             }, { controller: target, scope: Boolean(target.templateUrl) });
             angular.module(moduleName).directive(directiveName, function () { return (config); });
@@ -91,6 +92,7 @@ var at;
                 }
                 return at.AttachInjects.apply(at, [target].concat(args));
             }
+            /* istanbul ignore else */
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
             }
@@ -109,6 +111,8 @@ var at;
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
             config.controller = target;
+            // attributes and there requirements are defined in
+            // the "attribute" annotation
             config.scope = target.prototype.__componentAttributes || {};
             config.require = target.prototype.__componentRequirements || [];
             angular.module(config.moduleName)
@@ -129,10 +133,12 @@ var at;
                 isRequired: true
             };
             options = angular.extend({}, defaultOptions, options);
+            // will be used in "component" annotation
             if (!target.__componentAttributes) {
                 target.__componentAttributes = {};
             }
             target.__componentAttributes[key] = options.binding + options.name;
+            // will be used in "component" annotation
             if (options.isRequired) {
                 if (!target.__componentRequirements) {
                     target.__componentRequirements = [];
@@ -142,5 +148,97 @@ var at;
         };
     }
     at.Attribute = Attribute;
+    'use strict';
+    /* istanbul ignore next */
+    function combineResource(instance, model) {
+        angular.extend(instance, instance.$_Resource(model));
+    }
+    /* istanbul ignore next */
+    var ResourceClass = (function () {
+        function ResourceClass(model) {
+            combineResource(this, model);
+        }
+        return ResourceClass;
+    })();
+    at.ResourceClass = ResourceClass;
+    function Resource(moduleName, className, url, options) {
+        return function (target) {
+            function resourceClassFactory($resource, $injector) {
+                var args = [];
+                for (var _i = 2; _i < arguments.length; _i++) {
+                    args[_i - 2] = arguments[_i];
+                }
+                if (target.prototype.__resourceActions)
+                    prepareActionDataMapping(target.prototype.__resourceActions, $injector);
+                var newResource = $resource(url, target.prototype.__defaultResourceParams, target.prototype.__resourceActions, options);
+                // TODO: Quick fix INHERITANCE PROBLEM
+                // NOTICE: Without 'extendWithPrototype' this overrides
+                // prototype chain of target constructor function
+                return AttachInjects.apply(void 0, [angular.extend(newResource, angular.extend(target, newResource, {
+                    prototype: angular.extend(newResource.prototype, 
+                    // TODO: quick fix, "extendWithPrototype()" is used here
+                    extendWithPrototype({}, angular.extend(target.prototype, {
+                        /* tslint:disable:variable-name */
+                        $_Resource: newResource
+                    })))
+                }))].concat(args));
+            }
+            resourceClassFactory.$inject = (['$resource', '$injector']).concat(target.$inject /* istanbul ignore next */ || []);
+            angular.module(moduleName).factory(className, resourceClassFactory);
+        };
+    }
+    at.Resource = Resource;
+    // TODO: For fixing INHERITANCE PROBLEM
+    // This copies all parameters from src to dist, including prototype members
+    function extendWithPrototype(dist, src) {
+        for (var key in src) {
+            if (!dist[key]) {
+                dist[key] = src[key];
+            }
+        }
+        return dist;
+    }
+    var REMOVE_STARTING_$_REGEX = /^\$/;
+    function Action(options) {
+        return function (target, key) {
+            if (!target.__resourceActions) {
+                target.__resourceActions = {};
+            }
+            key = key.replace(REMOVE_STARTING_$_REGEX, '');
+            target.__resourceActions[key] = options;
+        };
+    }
+    at.Action = Action;
+    function prepareActionDataMapping(actions, $injector) {
+        var keys = Object.keys(actions);
+        keys.forEach(function (key) {
+            var action = actions[key];
+            if (action.mapper) {
+                if (action.transformResponse) {
+                    throw new Error('Both "mapper" and "transformResponse" are not working on an action');
+                }
+                var dependencies = [];
+                if (action.mapperDependencies) {
+                    action.mapperDependencies.forEach(function (key) {
+                        dependencies.push($injector.get(key));
+                    });
+                }
+                action.transformResponse = function (data) {
+                    return JSON.parse(data).map(function (entry) {
+                        return action.mapper.apply(null, [entry].concat(dependencies));
+                    });
+                };
+            }
+        });
+    }
+    function UseAsDefault(urlParamKey) {
+        return function (target, key) {
+            if (!target.__defaultResourceParams) {
+                target.__defaultResourceParams = {};
+            }
+            target.__defaultResourceParams[urlParamKey || key] = '@' + key;
+        };
+    }
+    at.UseAsDefault = UseAsDefault;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular.js.map

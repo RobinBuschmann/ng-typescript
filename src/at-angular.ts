@@ -155,7 +155,7 @@ module at {
 
     var componentDefaultOptions = {
         restrict: 'E',
-        controllerAs: 'ctrl',
+        controllerAs: 'vm',
         transclude: true,
         bindToController: true,
         controller: null

@@ -102,7 +102,7 @@ var at;
     at.ClassFactory = ClassFactory;
     var componentDefaultOptions = {
         restrict: 'E',
-        controllerAs: 'ctrl',
+        controllerAs: 'vm',
         transclude: true,
         bindToController: true,
         controller: null

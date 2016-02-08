@@ -114,7 +114,22 @@ var at;
             // attributes and there requirements are defined in
             // the "attribute" annotation
             config.scope = target.prototype.__componentAttributes || {};
-            config.require = target.prototype.__componentRequirements || [];
+            if (target.prototype.onPreLink || target.prototype.onPostLink) {
+                var link = {};
+                if (target.prototype.onPreLink) {
+                    link.pre = function (scope, element, attrs, ctrl) {
+                        if (ctrl.onPreLink)
+                            ctrl.onPreLink(element);
+                    };
+                }
+                if (target.prototype.onPostLink) {
+                    link.post = function (scope, element, attrs, ctrl) {
+                        if (ctrl.onPostLink)
+                            ctrl.onPostLink(element);
+                    };
+                }
+                config.compile = function () { return link; };
+            }
             angular.module(config.moduleName)
                 .directive(config.componentName, function () { return config; });
         };
@@ -129,8 +144,7 @@ var at;
         return function (target, key) {
             var defaultOptions = {
                 binding: bindings[typeof target[key]] || bindings.default,
-                name: key,
-                isRequired: true
+                name: key
             };
             options = angular.extend({}, defaultOptions, options);
             // will be used in "component" annotation
@@ -138,13 +152,6 @@ var at;
                 target.__componentAttributes = {};
             }
             target.__componentAttributes[key] = options.binding + options.name;
-            // will be used in "component" annotation
-            if (options.isRequired) {
-                if (!target.__componentRequirements) {
-                    target.__componentRequirements = [];
-                }
-                target.__componentRequirements.push(options.name);
-            }
         };
     }
     at.Attribute = Attribute;

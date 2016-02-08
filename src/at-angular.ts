@@ -161,6 +161,13 @@ module at {
         controller: null
     };
 
+    export interface IPreLink {
+        onPreLink: (element: JQuery) => void;
+    }
+    export interface IPostLink {
+        onPostLink: (element: JQuery) => void;
+    }
+
     export function Component(options: IComponentOptions): at.IClassAnnotationDecorator {
         return (target: Function) => {
 
@@ -172,7 +179,24 @@ module at {
             // attributes and there requirements are defined in
             // the "attribute" annotation
             config.scope = target.prototype.__componentAttributes || {};
-            config.require = target.prototype.__componentRequirements || [];
+
+            if(target.prototype.onPreLink || target.prototype.onPostLink) {
+
+                let link: {pre?: Function; post?: Function} = {};
+
+                if(target.prototype.onPreLink) {
+                    link.pre = (scope, element, attrs, ctrl) => {
+                        if (ctrl.onPreLink) ctrl.onPreLink(element);
+                    }
+                }
+                if(target.prototype.onPostLink) {
+                    link.post = (scope, element, attrs, ctrl) => {
+                        if (ctrl.onPostLink) ctrl.onPostLink(element);
+                    }
+                }
+
+                (<any>config).compile = () => link;
+            }
 
             angular.module(config.moduleName)
                 .directive(config.componentName, () => config);
@@ -182,7 +206,6 @@ module at {
     export interface IAttributeOptions {
         binding?: string;
         name?: string;
-        isRequired?: boolean;
     }
 
     var bindings = {
@@ -196,8 +219,7 @@ module at {
 
             var defaultOptions = {
                 binding: bindings[typeof target[key]] || bindings.default,
-                name: key,
-                isRequired: true
+                name: key
             };
 
             options = angular.extend({}, defaultOptions, options);
@@ -207,15 +229,6 @@ module at {
                 target.__componentAttributes = {};
             }
             target.__componentAttributes[key] = options.binding + options.name;
-
-            // will be used in "component" annotation
-            if(options.isRequired) {
-
-                if (!target.__componentRequirements) {
-                    target.__componentRequirements = [];
-                }
-                target.__componentRequirements.push(options.name);
-            }
         }
     }
 

@@ -8,6 +8,7 @@ declare module 'at' {
 
 module at {
 
+    import IModule = angular.IModule;
     'use strict';
 
     const directiveProperties: string[] = [
@@ -110,12 +111,11 @@ module at {
             if (ctrlName) {
                 Controller(moduleName, ctrlName)(target);
             }
-            config = directiveProperties.reduce((
-                config: angular.IDirective,
-                property: string
-            ) => {
+            config = directiveProperties.reduce((config: angular.IDirective,
+                                                 property: string) => {
                 return angular.isDefined(target[property]) ? angular.extend(config, {[property]: target[property]}) :
-                    config; /* istanbul ignore next */
+                    config;
+                /* istanbul ignore next */
             }, {controller: target, scope: Boolean(target.templateUrl)});
 
             angular.module(moduleName).directive(directiveName, () => (config));
@@ -131,6 +131,7 @@ module at {
             function factory(...args: any[]): any {
                 return at.AttachInjects(target, ...args);
             }
+
             /* istanbul ignore else */
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
@@ -149,8 +150,9 @@ module at {
         templateUrl?: string;
         template?: string;
         controllerAs?: string;
-        moduleName: string;
-        componentName: string;
+        moduleName?: string;
+        module?: IModule;
+        selector: string;
     }
 
     var componentDefaultOptions = {
@@ -174,22 +176,30 @@ module at {
             var config: IComponentDirective =
                 angular.extend({}, componentDefaultOptions, options || {});
 
+            target['__componentSelector'] = options.selector;
+
+            let attributeMeta = target.prototype.__componentAttributes || [];
+
             config.controller = target;
+            config.scope = {};
 
-            // attributes and there requirements are defined in
-            // the "attribute" annotation
-            config.scope = target.prototype.__componentAttributes || {};
+            // set scope hashes for controller scope
+            angular.forEach(attributeMeta, meta => {
+                config.scope[meta.key] = meta.scopeHash;
+            });
 
-            if(target.prototype.onPreLink || target.prototype.onPostLink) {
+            // If onPreLink or onPostLink is implemented by targets
+            // prototype, prepare these events:
+            if (target.prototype.onPreLink || target.prototype.onPostLink) {
 
                 let link: {pre?: Function; post?: Function} = {};
 
-                if(target.prototype.onPreLink) {
+                if (target.prototype.onPreLink) {
                     link.pre = (scope, element, attrs, ctrl) => {
                         if (ctrl.onPreLink) ctrl.onPreLink(element);
                     }
                 }
-                if(target.prototype.onPostLink) {
+                if (target.prototype.onPostLink) {
                     link.post = (scope, element, attrs, ctrl) => {
                         if (ctrl.onPostLink) ctrl.onPostLink(element);
                     }
@@ -198,37 +208,271 @@ module at {
                 (<any>config).compile = () => link;
             }
 
-            angular.module(config.moduleName)
-                .directive(config.componentName, () => config);
+            if (!config.moduleName && !config.module) {
+
+                throw new Error('Either "moduleName" or "module" has to be defined')
+            }
+
+            angular.module(config.moduleName || config.module.name)
+                .directive(config.selector, () => config);
         }
     }
 
     export interface IAttributeOptions {
         binding?: string;
         name?: string;
+        isOptional?: boolean;
     }
 
-    var bindings = {
-        'function': '@',
-        'default': '='
+    const defaultAttributeOptions = {
+        binding: '=',
+        name: '',
+        isOptional: false
     };
 
     export function Attribute(options: IAttributeOptions = {}): IMemberAnnotationDecorator {
 
         return (target: any, key: string) => {
 
-            var defaultOptions = {
-                binding: bindings[typeof target[key]] || bindings.default,
-                name: key
-            };
-
-            options = angular.extend({}, defaultOptions, options);
-
             // will be used in "component" annotation
             if (!target.__componentAttributes) {
-                target.__componentAttributes = {};
+                target.__componentAttributes = [];
             }
-            target.__componentAttributes[key] = options.binding + options.name;
+
+            options = angular.extend({}, defaultAttributeOptions, options);
+
+            // Add attribute meta data to the component meta data;
+            target.__componentAttributes.push({
+                key,
+                scopeHash: options.binding + (options.isOptional ? '?' : '') + (options.name),
+                isOptional: options.isOptional,
+                attrName: (options.name || key),
+                binding: options.binding
+            });
+        }
+    }
+
+    export interface IComponentState {
+
+        /**
+         * Class that is decorated by @at.Component
+         */
+        component?: Function;
+
+        /**
+         * Name of the state
+         */
+        name?: string;
+
+        parent?: string;
+
+        views?: { [name:string]: IComponentState };
+
+        resolve?: { [name:string]: any };
+        /**
+         * A url with optional parameters. When a state is navigated or transitioned to, the $stateParams service will be populated with any parameters that were passed.
+         */
+        url?: string;
+        /**
+         * A map which optionally configures parameters declared in the url, or defines additional non-url parameters. Only use this within a state if you are not using url. Otherwise you can specify your parameters within the url. When a state is navigated or transitioned to, the $stateParams service will be populated with any parameters that were passed.
+         */
+        params?: any;
+        /**
+         * Use the views property to set up multiple views. If you don't need multiple views within a single state this property is not needed. Tip: remember that often nested views are more useful and powerful than multiple sibling views.
+         */
+            abstract?: boolean;
+        /**
+         * Callback function for when a state is entered. Good way to trigger an action or dispatch an event, such as opening a dialog.
+         * If minifying your scripts, make sure to explicitly annotate this function, because it won't be automatically annotated by your build tools.
+         */
+        onEnter?: Function|Array<string|Function>;
+        /**
+         * Callback functions for when a state is entered and exited. Good way to trigger an action or dispatch an event, such as opening a dialog.
+         * If minifying your scripts, make sure to explicitly annotate this function, because it won't be automatically annotated by your build tools.
+         */
+        onExit?: Function|Array<string|Function>;
+        /**
+         * Arbitrary data object, useful for custom configuration.
+         */
+        data?: any;
+
+        /**
+         * Boolean (default true). If false will not re-trigger the same state just because a search/query parameter has changed. Useful for when you'd like to modify $location.search() without triggering a reload.
+         */
+        reloadOnSearch?: boolean;
+
+        /**
+         * Boolean (default true). If false will reload state on everytransitions. Useful for when you'd like to restore all data  to its initial state.
+         */
+        cache?: boolean;
+    }
+
+    export interface IRouteConfigOptions {
+        stateConfigs: Array<IComponentState>,
+        module: IModule,
+        conditions?: Array<{when: string|any, then: string|Function}>,
+        rules?: Array<Function>,
+        otherwise?: string|Function,
+        deferIntercept?: boolean
+    }
+
+    export function RouteConfig(options: IRouteConfigOptions): at.IClassAnnotationDecorator {
+        let _$interpolateProvider;
+
+        return (target: Function) => {
+
+            if (!options || !(options.stateConfigs && options.stateConfigs.length) || !options.module) {
+
+                throw new Error('Options (stateConfigs, module) are missing for RouteConfig annotation');
+            }
+
+            options.module.config(['$stateProvider', '$interpolateProvider', '$urlRouterProvider',
+                ($stateProvider, $interpolateProvider, $urlRouterProvider) => {
+
+                    _$interpolateProvider = $interpolateProvider;
+                    processUrlRouterProviderOptions($urlRouterProvider);
+
+                    angular.forEach(options.stateConfigs, config => {
+
+                        // process config for unnamed view
+                        if ('component' in config) {
+                            processComponent(config);
+                        }
+
+                        // process configs for named views
+                        if (config.views) {
+                            for (let key in config.views) {
+                                if (config.views.hasOwnProperty(key)) {
+                                    processComponent(config.views[key]);
+                                }
+                            }
+                        }
+                        $stateProvider.state(config);
+                    });
+                }]);
+        };
+
+        function processComponent(config) {
+
+            let attributeMeta = config.component.prototype.__componentAttributes || [];
+
+            checkToResolvedAttributes(attributeMeta, config.resolve);
+
+            if (config.resolve) {
+
+                config.controller = getController(attributeMeta, config.resolve);
+            }
+
+            config.template = getTemplate(attributeMeta, config.component.__componentSelector, config.resolve);
+        }
+
+        function processUrlRouterProviderOptions($urlRouterProvider) {
+
+            if(options.conditions) {
+                angular.forEach(options.conditions, condition => $urlRouterProvider.when(condition.when, condition.then));
+            }
+            if(options.rules) {
+                angular.forEach(options.rules, rule => $urlRouterProvider.rule(rule));
+            }
+            if(options.otherwise) {
+                $urlRouterProvider.otherwise(options.otherwise);
+            }
+            if(options.deferIntercept !== void 0) {
+                $urlRouterProvider.deferIntercept(options.deferIntercept);
+            }
+        }
+
+        /**
+         * The created controller is more or less a proxy, that
+         * provides the required data (through ui-routers resolve)
+         * for the component, that should be loaded for the
+         * specified state
+         *
+         * @param attributeMeta
+         * @param resolveObj
+         * @return {string[]}
+         */
+        function getController(attributeMeta, resolveObj) {
+
+            let controller = function ($scope) {
+
+                var resolvedValues = Array.prototype.slice.call(arguments, 1);
+
+                attributeMeta.forEach((meta, index) => {
+
+                    // It is only necessary to add values to the scope
+                    // that are defined in resolveObj
+                    if (resolveObj[meta.attrName]) {
+
+                        $scope[meta.attrName] = resolvedValues[index];
+                    }
+                })
+            };
+
+            return ['$scope'].concat(attributeMeta.map(meta => meta.attrName), controller)
+        }
+
+        /**
+         * Throws error, if there is no resolve configuration for
+         * required attributes
+         *
+         * @param attributeMeta
+         * @param resolveObj
+         */
+        function checkToResolvedAttributes(attributeMeta, resolveObj = {}) {
+
+            angular.forEach(attributeMeta, meta => {
+
+                if (!resolveObj[meta.attrName] && !meta.isOptional) {
+
+                    throw new Error(`There is no resolve object for "${meta.attrName}" attribute defined`);
+                }
+            });
+        }
+
+        /**
+         * Creates template string for specified component
+         *
+         * @example
+         *
+         * <spinner delay="{{}}"></spinner>
+         *
+         * @param attributeMeta
+         * @param selector
+         * @param resolveObj
+         * @return {string} Template
+         */
+        function getTemplate(attributeMeta, selector, resolveObj?) {
+            let templateAttrs = '';
+            let endSymbol = _$interpolateProvider.endSymbol();
+            let startSymbol = _$interpolateProvider.startSymbol();
+            let dashedSelector = toDash(selector);
+            const ONE_WAY_BINDING = '@';
+
+            // It is only necessary to add attributes if there are resolved
+            // in the templates scope
+            if (resolveObj) {
+
+                angular.forEach(attributeMeta, meta => {
+
+                    // It is only necessary to add attributes to the component
+                    // that are defined in resolveObj
+                    if (resolveObj[meta.attrName]) {
+
+                        templateAttrs += `${toDash(meta.attrName)}="${meta.binding === ONE_WAY_BINDING ?
+                            (startSymbol + meta.attrName + endSymbol) : meta.attrName}" `;
+                    }
+
+                });
+            }
+
+            return `<${dashedSelector} ${templateAttrs}></${dashedSelector}>`;
+        }
+
+        function toDash(str) {
+            return str.replace(/([A-Z])/g, function ($1) {
+                return "-" + $1.toLowerCase();
+            });
         }
     }
 
@@ -245,10 +489,13 @@ module at {
 
     /* istanbul ignore next */
     export class ResourceClass<T> implements angular.resource.IResource<T> {
-        public $promise : angular.IPromise<T>;
-        private $promiseArray : angular.IPromise<IResourceArray<T>>;
-        public $resolved : boolean;
-        constructor(model?: any) { combineResource(this, model); }
+        public $promise: angular.IPromise<T>;
+        private $promiseArray: angular.IPromise<IResourceArray<T>>;
+        public $resolved: boolean;
+
+        constructor(model?: any) {
+            combineResource(this, model);
+        }
 
         $get: () => angular.IPromise<T>;
         $query: () => angular.IPromise<IResourceArray<T>>;
@@ -277,7 +524,7 @@ module at {
         return (target: any): void => {
             function resourceClassFactory($resource: ResourceService, $injector: ng.auto.IInjectorService, ...args: any[]): any {
 
-                if(target.prototype.__resourceActions) prepareActionDataMapping(target.prototype.__resourceActions, $injector);
+                if (target.prototype.__resourceActions) prepareActionDataMapping(target.prototype.__resourceActions, $injector);
 
                 const newResource: angular.resource.IResourceClass<any> =
                     $resource(url, target.prototype.__defaultResourceParams,
@@ -307,8 +554,8 @@ module at {
     // This copies all parameters from src to dist, including prototype members
     function extendWithPrototype(dist, src) {
 
-        for(var key in src) {
-            if(!dist[key]) {
+        for (var key in src) {
+            if (!dist[key]) {
                 dist[key] = src[key];
             }
         }
@@ -321,11 +568,12 @@ module at {
     }
 
     var REMOVE_STARTING_$_REGEX = /^\$/;
+
     export function Action(options: IActionOptions): IMemberAnnotationDecorator {
 
         return (target: any, key: string): void => {
 
-            if(!target.__resourceActions) {
+            if (!target.__resourceActions) {
                 target.__resourceActions = {};
             }
 
@@ -342,15 +590,15 @@ module at {
         keys.forEach(key => {
 
             var action = actions[key];
-            if(action.mapper) {
-                if(action.transformResponse) {
+            if (action.mapper) {
+                if (action.transformResponse) {
 
                     throw new Error('Both "mapper" and "transformResponse" are not working on an action');
                 }
 
                 var dependencies = [];
 
-                if(action.mapperDependencies) {
+                if (action.mapperDependencies) {
                     action.mapperDependencies.forEach(key => {
                         dependencies.push($injector.get(key));
                     });
@@ -370,13 +618,14 @@ module at {
 
         return (target: any, key: string): void => {
 
-            if(!target.__defaultResourceParams) {
+            if (!target.__defaultResourceParams) {
                 target.__defaultResourceParams = {};
             }
 
             target.__defaultResourceParams[urlParamKey || key] = '@' + key;
         }
     }
+
     /* tslint:enable:no-any */
 
 }

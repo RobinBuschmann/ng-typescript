@@ -76,8 +76,9 @@ var at;
             }
             config = directiveProperties.reduce(function (config, property) {
                 return angular.isDefined(target[property]) ? angular.extend(config, (_a = {}, _a[property] = target[property], _a)) :
-                    config; /* istanbul ignore next */
+                    config;
                 var _a;
+                /* istanbul ignore next */
             }, { controller: target, scope: Boolean(target.templateUrl) });
             angular.module(moduleName).directive(directiveName, function () { return (config); });
         };
@@ -110,10 +111,16 @@ var at;
     function Component(options) {
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
+            target['__componentSelector'] = options.selector;
+            var attributeMeta = target.prototype.__componentAttributes || [];
             config.controller = target;
-            // attributes and there requirements are defined in
-            // the "attribute" annotation
-            config.scope = target.prototype.__componentAttributes || {};
+            config.scope = {};
+            // set scope hashes for controller scope
+            angular.forEach(attributeMeta, function (meta) {
+                config.scope[meta.key] = meta.scopeHash;
+            });
+            // If onPreLink or onPostLink is implemented by targets
+            // prototype, prepare these events:
             if (target.prototype.onPreLink || target.prototype.onPostLink) {
                 var link = {};
                 if (target.prototype.onPreLink) {
@@ -130,31 +137,164 @@ var at;
                 }
                 config.compile = function () { return link; };
             }
-            angular.module(config.moduleName)
-                .directive(config.componentName, function () { return config; });
+            if (!config.moduleName && !config.module) {
+                throw new Error('Either "moduleName" or "module" has to be defined');
+            }
+            angular.module(config.moduleName || config.module.name)
+                .directive(config.selector, function () { return config; });
         };
     }
     at.Component = Component;
-    var bindings = {
-        'function': '@',
-        'default': '='
+    var defaultAttributeOptions = {
+        binding: '=',
+        name: '',
+        isOptional: false
     };
     function Attribute(options) {
         if (options === void 0) { options = {}; }
         return function (target, key) {
-            var defaultOptions = {
-                binding: bindings[typeof target[key]] || bindings.default,
-                name: key
-            };
-            options = angular.extend({}, defaultOptions, options);
             // will be used in "component" annotation
             if (!target.__componentAttributes) {
-                target.__componentAttributes = {};
+                target.__componentAttributes = [];
             }
-            target.__componentAttributes[key] = options.binding + options.name;
+            options = angular.extend({}, defaultAttributeOptions, options);
+            // Add attribute meta data to the component meta data;
+            target.__componentAttributes.push({
+                key: key,
+                scopeHash: options.binding + (options.isOptional ? '?' : '') + (options.name),
+                isOptional: options.isOptional,
+                attrName: (options.name || key),
+                binding: options.binding
+            });
         };
     }
     at.Attribute = Attribute;
+    function RouteConfig(options) {
+        var _$interpolateProvider;
+        return function (target) {
+            if (!options || !(options.stateConfigs && options.stateConfigs.length) || !options.module) {
+                throw new Error('Options (stateConfigs, module) are missing for RouteConfig annotation');
+            }
+            options.module.config(['$stateProvider', '$interpolateProvider', '$urlRouterProvider',
+                function ($stateProvider, $interpolateProvider, $urlRouterProvider) {
+                    _$interpolateProvider = $interpolateProvider;
+                    processUrlRouterProviderOptions($urlRouterProvider);
+                    angular.forEach(options.stateConfigs, function (config) {
+                        // process config for unnamed view
+                        if ('component' in config) {
+                            processComponent(config);
+                        }
+                        // process configs for named views
+                        if (config.views) {
+                            for (var key in config.views) {
+                                if (config.views.hasOwnProperty(key)) {
+                                    processComponent(config.views[key]);
+                                }
+                            }
+                        }
+                        $stateProvider.state(config);
+                    });
+                }]);
+        };
+        function processComponent(config) {
+            var attributeMeta = config.component.prototype.__componentAttributes || [];
+            checkToResolvedAttributes(attributeMeta, config.resolve);
+            if (config.resolve) {
+                config.controller = getController(attributeMeta, config.resolve);
+            }
+            config.template = getTemplate(attributeMeta, config.component.__componentSelector, config.resolve);
+        }
+        function processUrlRouterProviderOptions($urlRouterProvider) {
+            if (options.conditions) {
+                angular.forEach(options.conditions, function (condition) { return $urlRouterProvider.when(condition.when, condition.then); });
+            }
+            if (options.rules) {
+                angular.forEach(options.rules, function (rule) { return $urlRouterProvider.rule(rule); });
+            }
+            if (options.otherwise) {
+                $urlRouterProvider.otherwise(options.otherwise);
+            }
+            if (options.deferIntercept !== void 0) {
+                $urlRouterProvider.deferIntercept(options.deferIntercept);
+            }
+        }
+        /**
+         * The created controller is more or less a proxy, that
+         * provides the required data (through ui-routers resolve)
+         * for the component, that should be loaded for the
+         * specified state
+         *
+         * @param attributeMeta
+         * @param resolveObj
+         * @return {string[]}
+         */
+        function getController(attributeMeta, resolveObj) {
+            var controller = function ($scope) {
+                var resolvedValues = Array.prototype.slice.call(arguments, 1);
+                attributeMeta.forEach(function (meta, index) {
+                    // It is only necessary to add values to the scope
+                    // that are defined in resolveObj
+                    if (resolveObj[meta.attrName]) {
+                        $scope[meta.attrName] = resolvedValues[index];
+                    }
+                });
+            };
+            return ['$scope'].concat(attributeMeta.map(function (meta) { return meta.attrName; }), controller);
+        }
+        /**
+         * Throws error, if there is no resolve configuration for
+         * required attributes
+         *
+         * @param attributeMeta
+         * @param resolveObj
+         */
+        function checkToResolvedAttributes(attributeMeta, resolveObj) {
+            if (resolveObj === void 0) { resolveObj = {}; }
+            angular.forEach(attributeMeta, function (meta) {
+                if (!resolveObj[meta.attrName] && !meta.isOptional) {
+                    throw new Error("There is no resolve object for \"" + meta.attrName + "\" attribute defined");
+                }
+            });
+        }
+        /**
+         * Creates template string for specified component
+         *
+         * @example
+         *
+         * <spinner delay="{{}}"></spinner>
+         *
+         * @param attributeMeta
+         * @param selector
+         * @param resolveObj
+         * @return {string} Template
+         */
+        function getTemplate(attributeMeta, selector, resolveObj) {
+            var templateAttrs = '';
+            var endSymbol = _$interpolateProvider.endSymbol();
+            var startSymbol = _$interpolateProvider.startSymbol();
+            var dashedSelector = toDash(selector);
+            var ONE_WAY_BINDING = '@';
+            // It is only necessary to add attributes if there are resolved
+            // in the templates scope
+            if (resolveObj) {
+                angular.forEach(attributeMeta, function (meta) {
+                    // It is only necessary to add attributes to the component
+                    // that are defined in resolveObj
+                    if (resolveObj[meta.attrName]) {
+                        templateAttrs += toDash(meta.attrName) + "=\"" + (meta.binding === ONE_WAY_BINDING ?
+                            (startSymbol + meta.attrName + endSymbol) : meta.attrName) + "\" ";
+                    }
+                });
+            }
+            return "<" + dashedSelector + " " + templateAttrs + "></" + dashedSelector + ">";
+        }
+        function toDash(str) {
+            return str.replace(/([A-Z])/g, function ($1) {
+                return "-" + $1.toLowerCase();
+            });
+        }
+    }
+    at.RouteConfig = RouteConfig;
     'use strict';
     /* istanbul ignore next */
     function combineResource(instance, model) {

@@ -106,7 +106,28 @@ var at;
             else {
                 factory = function () { return config; };
             }
-            processLinks(target, options, config, delegateService);
+            // If onPreLink or onPostLink is implemented by targets
+            // prototype, prepare these events:
+            if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
+                var link_1 = {};
+                if (target.prototype.onPreLink || options.delegate) {
+                    link_1.pre = function (scope, element, attrs, componentInstance) {
+                        if (componentInstance.onPreLink)
+                            componentInstance.onPreLink(element);
+                        if (delegateService)
+                            delegateService.createDelegate(componentInstance, componentInstance.delegateHandle);
+                        if (delegateService)
+                            scope.$on('$destroy', function () { return delegateService.removeDelegate(componentInstance.delegateHandle); });
+                    };
+                }
+                if (target.prototype.onPostLink) {
+                    link_1.post = function (scope, element, attrs, componentInstance) {
+                        if (componentInstance.onPostLink)
+                            componentInstance.onPostLink(element);
+                    };
+                }
+                config.compile = function () { return link_1; };
+            }
             if (!config.moduleName && !config.module) {
                 throw new Error('Either "moduleName" or "module" has to be defined');
             }
@@ -115,30 +136,6 @@ var at;
         };
     }
     at.Component = Component;
-    function processLinks(target, options, config, delegateService) {
-        // If onPreLink or onPostLink is implemented by targets
-        // prototype, prepare these events:
-        if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
-            var link_1 = {};
-            if (target.prototype.onPreLink || options.delegate) {
-                link_1.pre = function (scope, element, attrs, componentInstance) {
-                    if (componentInstance.onPreLink)
-                        componentInstance.onPreLink(element);
-                    if (delegateService)
-                        delegateService.createDelegate(componentInstance, componentInstance.delegateHandle);
-                };
-            }
-            if (target.prototype.onPostLink) {
-                link_1.post = function (scope, element, attrs, componentInstance) {
-                    if (componentInstance.onPostLink)
-                        componentInstance.onPostLink(element);
-                    if (delegateService)
-                        scope.$on('$destroy', function () { return delegateService.removeDelegate(componentInstance.delegateHandle); });
-                };
-            }
-            config.compile = function () { return link_1; };
-        }
-    }
     /**
      * @ngdoc directive
      * @name delegateHandle
@@ -148,7 +145,7 @@ var at;
      *              to interact via a delegate with a component
      */
     function setDelegateHandleAttribute(scope) {
-        scope.delegateHandle = '=';
+        scope.delegateHandle = '=?';
     }
 })(at || (at = {}));
 var at;

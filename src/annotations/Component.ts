@@ -73,7 +73,27 @@ module at {
                 factory = () => config;
             }
 
-            processLinks(target, options, config, delegateService);
+            // If onPreLink or onPostLink is implemented by targets
+            // prototype, prepare these events:
+            if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
+
+                let link: {pre?: Function; post?: Function} = {};
+
+                if (target.prototype.onPreLink || options.delegate) {
+                    link.pre = (scope, element, attrs, componentInstance) => {
+                        if (componentInstance.onPreLink) componentInstance.onPreLink(element);
+                        if(delegateService) delegateService.createDelegate(componentInstance, componentInstance.delegateHandle);
+                        if(delegateService) scope.$on('$destroy', () => delegateService.removeDelegate(componentInstance.delegateHandle));
+                    }
+                }
+                if (target.prototype.onPostLink) {
+                    link.post = (scope, element, attrs, componentInstance) => {
+                        if (componentInstance.onPostLink) componentInstance.onPostLink(element);
+                    }
+                }
+
+                (<any>config).compile = () => link;
+            }
 
             if (!config.moduleName && !config.module) {
 
@@ -82,31 +102,6 @@ module at {
 
             angular.module(config.moduleName || config.module.name)
                 .directive(config.selector, factory);
-        }
-    }
-
-    function processLinks(target, options: IComponentOptions, config: IComponentDirective, delegateService?) {
-
-        // If onPreLink or onPostLink is implemented by targets
-        // prototype, prepare these events:
-        if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
-
-            let link: {pre?: Function; post?: Function} = {};
-
-            if (target.prototype.onPreLink || options.delegate) {
-                link.pre = (scope, element, attrs, componentInstance) => {
-                    if (componentInstance.onPreLink) componentInstance.onPreLink(element);
-                    if(delegateService) delegateService.createDelegate(componentInstance, componentInstance.delegateHandle);
-                }
-            }
-            if (target.prototype.onPostLink) {
-                link.post = (scope, element, attrs, componentInstance) => {
-                    if (componentInstance.onPostLink) componentInstance.onPostLink(element);
-                    if(delegateService) scope.$on('$destroy', () => delegateService.removeDelegate(componentInstance.delegateHandle));
-                }
-            }
-
-            (<any>config).compile = () => link;
         }
     }
 
@@ -120,6 +115,6 @@ module at {
      */
     function setDelegateHandleAttribute(scope) {
 
-        scope.delegateHandle = '=';
+        scope.delegateHandle = '=?';
     }
 }

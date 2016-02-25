@@ -12,6 +12,10 @@
   ],
   "author": "Jakub Strojewski <jakub.strojewski@gmail.com>",
   "license": "WTFPL",
+  "main": "dist/at-angular.js",
+  "typescript": {
+    "definition": "dist/at-angular.d.ts"
+  },
   "dependencies": {},
   "devDependencies": {
     "coveralls": "2.11.4",

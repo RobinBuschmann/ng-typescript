@@ -5,7 +5,8 @@
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "rootDir": "src/",
-    "outDir": "dist/"
+    "pretty": true,
+    "outFile": "dist/at-angular.js"
   },
 
   "exclude": [

@@ -2,27 +2,15 @@
 var at;
 (function (at) {
     'use strict';
-    var directiveProperties = [
-        'compile',
-        'controller',
-        'controllerAs',
-        'bindToController',
-        'link',
-        'priority',
-        'replace',
-        'require',
-        'restrict',
-        'scope',
-        'template',
-        'templateUrl',
-        'terminal',
-        'transclude'
-    ];
     function instantiate(moduleName, name, mode) {
         return function (target) {
             angular.module(moduleName)[mode](name, target);
         };
     }
+    at.instantiate = instantiate;
+})(at || (at = {}));
+var at;
+(function (at) {
     function AttachInjects(target) {
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -34,117 +22,9 @@ var at;
         return target;
     }
     at.AttachInjects = AttachInjects;
-    function Inject() {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        return function (target, key, index) {
-            if (angular.isNumber(index)) {
-                target.$inject = target.$inject || [];
-                target.$inject[index] = args[0];
-            }
-            else {
-                target.$inject = args;
-            }
-        };
-    }
-    at.Inject = Inject;
-    function Service(moduleName, serviceName) {
-        return instantiate(moduleName, serviceName, 'service');
-    }
-    at.Service = Service;
-    function Provider(moduleName, serviceName) {
-        return instantiate(moduleName, serviceName, 'provider');
-    }
-    at.Provider = Provider;
-    function Factory(moduleName, serviceName) {
-        return instantiate(moduleName, serviceName, 'factory');
-    }
-    at.Factory = Factory;
-    function Controller(moduleName, ctrlName) {
-        return instantiate(moduleName, ctrlName, 'controller');
-    }
-    at.Controller = Controller;
-    function Directive(moduleName, directiveName) {
-        return function (target) {
-            var config;
-            var ctrlName = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
-            /* istanbul ignore else */
-            if (ctrlName) {
-                Controller(moduleName, ctrlName)(target);
-            }
-            config = directiveProperties.reduce(function (config, property) {
-                return angular.isDefined(target[property]) ? angular.extend(config, (_a = {}, _a[property] = target[property], _a)) :
-                    config;
-                var _a;
-                /* istanbul ignore next */
-            }, { controller: target, scope: Boolean(target.templateUrl) });
-            angular.module(moduleName).directive(directiveName, function () { return (config); });
-        };
-    }
-    at.Directive = Directive;
-    function ClassFactory(moduleName, className) {
-        return function (target) {
-            function factory() {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i - 0] = arguments[_i];
-                }
-                return at.AttachInjects.apply(at, [target].concat(args));
-            }
-            /* istanbul ignore else */
-            if (target.$inject && target.$inject.length > 0) {
-                factory.$inject = target.$inject.slice(0);
-            }
-            angular.module(moduleName).factory(className, factory);
-        };
-    }
-    at.ClassFactory = ClassFactory;
-    var componentDefaultOptions = {
-        restrict: 'E',
-        controllerAs: 'vm',
-        transclude: true,
-        bindToController: true,
-        controller: null
-    };
-    function Component(options) {
-        return function (target) {
-            var config = angular.extend({}, componentDefaultOptions, options || {});
-            target['__componentSelector'] = options.selector;
-            var attributeMeta = target.prototype.__componentAttributes || [];
-            config.controller = target;
-            config.scope = {};
-            // set scope hashes for controller scope
-            angular.forEach(attributeMeta, function (meta) {
-                config.scope[meta.key] = meta.scopeHash;
-            });
-            // If onPreLink or onPostLink is implemented by targets
-            // prototype, prepare these events:
-            if (target.prototype.onPreLink || target.prototype.onPostLink) {
-                var link = {};
-                if (target.prototype.onPreLink) {
-                    link.pre = function (scope, element, attrs, ctrl) {
-                        if (ctrl.onPreLink)
-                            ctrl.onPreLink(element);
-                    };
-                }
-                if (target.prototype.onPostLink) {
-                    link.post = function (scope, element, attrs, ctrl) {
-                        if (ctrl.onPostLink)
-                            ctrl.onPostLink(element);
-                    };
-                }
-                config.compile = function () { return link; };
-            }
-            if (!config.moduleName && !config.module) {
-                throw new Error('Either "moduleName" or "module" has to be defined');
-            }
-            angular.module(config.moduleName || config.module.name)
-                .directive(config.selector, function () { return config; });
-        };
-    }
-    at.Component = Component;
+})(at || (at = {}));
+var at;
+(function (at) {
     var defaultAttributeOptions = {
         binding: '=',
         name: '',
@@ -169,6 +49,293 @@ var at;
         };
     }
     at.Attribute = Attribute;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function ClassFactory(moduleName, className) {
+        return function (target) {
+            function factory() {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i - 0] = arguments[_i];
+                }
+                return at.AttachInjects.apply(at, [target].concat(args));
+            }
+            /* istanbul ignore else */
+            if (target.$inject && target.$inject.length > 0) {
+                factory.$inject = target.$inject.slice(0);
+            }
+            angular.module(moduleName).factory(className, factory);
+        };
+    }
+    at.ClassFactory = ClassFactory;
+})(at || (at = {}));
+var at;
+(function (at) {
+    var componentDefaultOptions = {
+        restrict: 'E',
+        controllerAs: 'vm',
+        transclude: true,
+        bindToController: true,
+        controller: null
+    };
+    function Component(options) {
+        return function (target) {
+            var config = angular.extend({}, componentDefaultOptions, options || {});
+            target['__componentSelector'] = options.selector;
+            var attributeMeta = target.prototype.__componentAttributes || [];
+            config.controller = target;
+            config.scope = {};
+            // set scope hashes for controller scope
+            angular.forEach(attributeMeta, function (meta) {
+                config.scope[meta.key] = meta.scopeHash;
+            });
+            var factory;
+            var delegateService;
+            if (options.delegate) {
+                if (!options.delegate.prototype.__delegateServiceName) {
+                    throw new Error("Delegate must have DelegateService annotation");
+                }
+                setDelegateHandleAttribute(config.scope);
+                // if delegate is defined, inject the specified delegate by its service name
+                factory = [options.delegate.prototype.__delegateServiceName, function (__delegateService) {
+                        delegateService = __delegateService;
+                        return config;
+                    }];
+            }
+            else {
+                factory = function () { return config; };
+            }
+            processLinks(target, options, config, delegateService);
+            if (!config.moduleName && !config.module) {
+                throw new Error('Either "moduleName" or "module" has to be defined');
+            }
+            angular.module(config.moduleName || config.module.name)
+                .directive(config.selector, factory);
+        };
+    }
+    at.Component = Component;
+    function processLinks(target, options, config, delegateService) {
+        // If onPreLink or onPostLink is implemented by targets
+        // prototype, prepare these events:
+        if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
+            var link_1 = {};
+            if (target.prototype.onPreLink || options.delegate) {
+                link_1.pre = function (scope, element, attrs, componentInstance) {
+                    if (componentInstance.onPreLink)
+                        componentInstance.onPreLink(element);
+                    if (delegateService)
+                        delegateService.createDelegate(componentInstance, componentInstance.delegateHandle);
+                };
+            }
+            if (target.prototype.onPostLink) {
+                link_1.post = function (scope, element, attrs, componentInstance) {
+                    if (componentInstance.onPostLink)
+                        componentInstance.onPostLink(element);
+                    if (delegateService)
+                        scope.$on('$destroy', function () { return delegateService.removeDelegate(componentInstance.delegateHandle); });
+                };
+            }
+            config.compile = function () { return link_1; };
+        }
+    }
+    /**
+     * @ngdoc directive
+     * @name delegateHandle
+     * @type string
+     * @restrict A
+     * @description Delegate handle key, which allows a consumer of a component,
+     *              to interact via a delegate with a component
+     */
+    function setDelegateHandleAttribute(scope) {
+        scope.delegateHandle = '=';
+    }
+})(at || (at = {}));
+var at;
+(function (at) {
+    function Controller(moduleName, ctrlName) {
+        return at.instantiate(moduleName, ctrlName, 'controller');
+    }
+    at.Controller = Controller;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function DelegateService(moduleName, serviceName) {
+        return function (target) {
+            target.prototype.__delegateServiceName = serviceName;
+            angular.module(moduleName).service(serviceName, target);
+        };
+    }
+    at.DelegateService = DelegateService;
+})(at || (at = {}));
+var at;
+(function (at) {
+    var directiveProperties = [
+        'compile',
+        'controller',
+        'controllerAs',
+        'bindToController',
+        'link',
+        'priority',
+        'replace',
+        'require',
+        'restrict',
+        'scope',
+        'template',
+        'templateUrl',
+        'terminal',
+        'transclude'
+    ];
+    function Directive(moduleName, directiveName) {
+        return function (target) {
+            var config;
+            var ctrlName = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
+            /* istanbul ignore else */
+            if (ctrlName) {
+                at.Controller(moduleName, ctrlName)(target);
+            }
+            config = directiveProperties.reduce(function (config, property) {
+                return angular.isDefined(target[property]) ? angular.extend(config, (_a = {}, _a[property] = target[property], _a)) :
+                    config;
+                var _a;
+                /* istanbul ignore next */
+            }, { controller: target, scope: Boolean(target.templateUrl) });
+            angular.module(moduleName).directive(directiveName, function () { return (config); });
+        };
+    }
+    at.Directive = Directive;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function Factory(moduleName, serviceName) {
+        return at.instantiate(moduleName, serviceName, 'factory');
+    }
+    at.Factory = Factory;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function Inject() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        return function (target, key, index) {
+            if (angular.isNumber(index)) {
+                target.$inject = target.$inject || [];
+                target.$inject[index] = args[0];
+            }
+            else {
+                target.$inject = args;
+            }
+        };
+    }
+    at.Inject = Inject;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function Provider(moduleName, serviceName) {
+        return at.instantiate(moduleName, serviceName, 'provider');
+    }
+    at.Provider = Provider;
+})(at || (at = {}));
+var at;
+(function (at) {
+    'use strict';
+    /* istanbul ignore next */
+    function combineResource(instance, model) {
+        angular.extend(instance, instance.$_Resource(model));
+    }
+    /* istanbul ignore next */
+    var ResourceClass = (function () {
+        function ResourceClass(model) {
+            combineResource(this, model);
+        }
+        return ResourceClass;
+    }());
+    at.ResourceClass = ResourceClass;
+    function Resource(moduleName, className, url, options) {
+        return function (target) {
+            function resourceClassFactory($resource, $injector) {
+                var args = [];
+                for (var _i = 2; _i < arguments.length; _i++) {
+                    args[_i - 2] = arguments[_i];
+                }
+                if (target.prototype.__resourceActions)
+                    prepareActionDataMapping(target.prototype.__resourceActions, $injector);
+                var newResource = $resource(url, target.prototype.__defaultResourceParams, target.prototype.__resourceActions, options);
+                // TODO: Quick fix INHERITANCE PROBLEM
+                // NOTICE: Without 'extendWithPrototype' this overrides
+                // prototype chain of target constructor function
+                return at.AttachInjects.apply(void 0, [angular.extend(newResource, angular.extend(target, newResource, {
+                    prototype: angular.extend(newResource.prototype, 
+                    // TODO: quick fix, "extendWithPrototype()" is used here
+                    extendWithPrototype({}, angular.extend(target.prototype, {
+                        /* tslint:disable:variable-name */
+                        $_Resource: newResource
+                    })))
+                }))].concat(args));
+            }
+            resourceClassFactory.$inject = (['$resource', '$injector']).concat(target.$inject /* istanbul ignore next */ || []);
+            angular.module(moduleName).factory(className, resourceClassFactory);
+        };
+    }
+    at.Resource = Resource;
+    // TODO: For fixing INHERITANCE PROBLEM
+    // This copies all parameters from src to dist, including prototype members
+    function extendWithPrototype(dist, src) {
+        for (var key in src) {
+            if (!dist[key]) {
+                dist[key] = src[key];
+            }
+        }
+        return dist;
+    }
+    var REMOVE_STARTING_$_REGEX = /^\$/;
+    function Action(options) {
+        return function (target, key) {
+            if (!target.__resourceActions) {
+                target.__resourceActions = {};
+            }
+            key = key.replace(REMOVE_STARTING_$_REGEX, '');
+            target.__resourceActions[key] = options;
+        };
+    }
+    at.Action = Action;
+    function prepareActionDataMapping(actions, $injector) {
+        var keys = Object.keys(actions);
+        keys.forEach(function (key) {
+            var action = actions[key];
+            if (action.mapper) {
+                if (action.transformResponse) {
+                    throw new Error('Both "mapper" and "transformResponse" are not working on an action');
+                }
+                var dependencies = [];
+                if (action.mapperDependencies) {
+                    action.mapperDependencies.forEach(function (key) {
+                        dependencies.push($injector.get(key));
+                    });
+                }
+                action.transformResponse = function (data) {
+                    return JSON.parse(data).map(function (entry) {
+                        return action.mapper.apply(null, [entry].concat(dependencies));
+                    });
+                };
+            }
+        });
+    }
+    function UseAsDefault(urlParamKey) {
+        return function (target, key) {
+            if (!target.__defaultResourceParams) {
+                target.__defaultResourceParams = {};
+            }
+            target.__defaultResourceParams[urlParamKey || key] = '@' + key;
+        };
+    }
+    at.UseAsDefault = UseAsDefault;
+})(at || (at = {}));
+///<reference path="../../typings/tsd.d.ts"/>
+var at;
+(function (at) {
     function RouteConfig(options) {
         var _$interpolateProvider;
         return function (target) {
@@ -295,97 +462,60 @@ var at;
         }
     }
     at.RouteConfig = RouteConfig;
-    'use strict';
-    /* istanbul ignore next */
-    function combineResource(instance, model) {
-        angular.extend(instance, instance.$_Resource(model));
+})(at || (at = {}));
+var at;
+(function (at) {
+    function Service(moduleName, serviceName) {
+        return at.instantiate(moduleName, serviceName, 'service');
     }
-    /* istanbul ignore next */
-    var ResourceClass = (function () {
-        function ResourceClass(model) {
-            combineResource(this, model);
+    at.Service = Service;
+})(at || (at = {}));
+var at;
+(function (at) {
+    var Delegate = (function () {
+        function Delegate() {
+            this.delegates = {};
         }
-        return ResourceClass;
-    })();
-    at.ResourceClass = ResourceClass;
-    function Resource(moduleName, className, url, options) {
-        return function (target) {
-            function resourceClassFactory($resource, $injector) {
-                var args = [];
-                for (var _i = 2; _i < arguments.length; _i++) {
-                    args[_i - 2] = arguments[_i];
-                }
-                if (target.prototype.__resourceActions)
-                    prepareActionDataMapping(target.prototype.__resourceActions, $injector);
-                var newResource = $resource(url, target.prototype.__defaultResourceParams, target.prototype.__resourceActions, options);
-                // TODO: Quick fix INHERITANCE PROBLEM
-                // NOTICE: Without 'extendWithPrototype' this overrides
-                // prototype chain of target constructor function
-                return AttachInjects.apply(void 0, [angular.extend(newResource, angular.extend(target, newResource, {
-                    prototype: angular.extend(newResource.prototype, 
-                    // TODO: quick fix, "extendWithPrototype()" is used here
-                    extendWithPrototype({}, angular.extend(target.prototype, {
-                        /* tslint:disable:variable-name */
-                        $_Resource: newResource
-                    })))
-                }))].concat(args));
+        Delegate.prototype.getByHandle = function (handleKey) {
+            var delegate = this.delegates[handleKey];
+            if (delegate) {
+                return delegate;
             }
-            resourceClassFactory.$inject = (['$resource', '$injector']).concat(target.$inject /* istanbul ignore next */ || []);
-            angular.module(moduleName).factory(className, resourceClassFactory);
+            throw new Error("Delegate with handle key " + handleKey + " does not exist");
         };
-    }
-    at.Resource = Resource;
-    // TODO: For fixing INHERITANCE PROBLEM
-    // This copies all parameters from src to dist, including prototype members
-    function extendWithPrototype(dist, src) {
-        for (var key in src) {
-            if (!dist[key]) {
-                dist[key] = src[key];
-            }
-        }
-        return dist;
-    }
-    var REMOVE_STARTING_$_REGEX = /^\$/;
-    function Action(options) {
-        return function (target, key) {
-            if (!target.__resourceActions) {
-                target.__resourceActions = {};
-            }
-            key = key.replace(REMOVE_STARTING_$_REGEX, '');
-            target.__resourceActions[key] = options;
-        };
-    }
-    at.Action = Action;
-    function prepareActionDataMapping(actions, $injector) {
-        var keys = Object.keys(actions);
-        keys.forEach(function (key) {
-            var action = actions[key];
-            if (action.mapper) {
-                if (action.transformResponse) {
-                    throw new Error('Both "mapper" and "transformResponse" are not working on an action');
+        /**
+         * @internal
+         * @param handleKey
+         * @param componentInstance
+         */
+        Delegate.prototype.createDelegate = function (componentInstance, handleKey) {
+            if (handleKey === void 0) { handleKey = null; }
+            if (handleKey) {
+                if (this.delegates[handleKey]) {
+                    throw new Error("Delegate with handle key " + handleKey + " already exist");
                 }
-                var dependencies = [];
-                if (action.mapperDependencies) {
-                    action.mapperDependencies.forEach(function (key) {
-                        dependencies.push($injector.get(key));
-                    });
-                }
-                action.transformResponse = function (data) {
-                    return JSON.parse(data).map(function (entry) {
-                        return action.mapper.apply(null, [entry].concat(dependencies));
-                    });
-                };
+                var delegate = this.getInstance();
+                delegate['componentInstance'] = componentInstance;
+                this.delegates[handleKey] = delegate;
             }
-        });
-    }
-    function UseAsDefault(urlParamKey) {
-        return function (target, key) {
-            if (!target.__defaultResourceParams) {
-                target.__defaultResourceParams = {};
+            else {
+                // if no handle key is provided, set current instance
+                // to the delegate of the specified component instance
+                // as fall back
+                this.componentInstance = componentInstance;
             }
-            target.__defaultResourceParams[urlParamKey || key] = '@' + key;
         };
-    }
-    at.UseAsDefault = UseAsDefault;
+        /**
+         * @internal
+         * @param handleKey
+         */
+        Delegate.prototype.removeDelegate = function (handleKey) {
+            if (handleKey && this.delegates[handleKey]) {
+                this.delegates[handleKey] = null;
+            }
+        };
+        return Delegate;
+    }());
+    at.Delegate = Delegate;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular.js.map

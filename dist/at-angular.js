@@ -399,14 +399,22 @@ var at;
             var controller = function ($scope) {
                 var resolvedValues = Array.prototype.slice.call(arguments, 1);
                 attributeMeta.forEach(function (meta, index) {
-                    // It is only necessary to add values to the scope
-                    // that are defined in resolveObj
+                    // Only prepare dependencies, that are defined
+                    // in resolveObj
                     if (resolveObj[meta.attrName]) {
                         $scope[meta.attrName] = resolvedValues[index];
                     }
                 });
             };
-            return ['$scope'].concat(attributeMeta.map(function (meta) { return meta.attrName; }), controller);
+            var resolvedNames = [];
+            attributeMeta.forEach(function (meta) {
+                // Only prepare dependencies, that are defined
+                // in resolveObj
+                if (resolveObj[meta.attrName]) {
+                    resolvedNames.push(meta.attrName);
+                }
+            });
+            return ['$scope'].concat(resolvedNames, controller);
         }
         /**
          * Throws error, if there is no resolve configuration for

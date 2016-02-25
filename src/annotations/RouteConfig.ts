@@ -148,12 +148,12 @@ module at {
 
             let controller = function ($scope) {
 
-                var resolvedValues = Array.prototype.slice.call(arguments, 1);
+                let resolvedValues = Array.prototype.slice.call(arguments, 1);
 
                 attributeMeta.forEach((meta, index) => {
 
-                    // It is only necessary to add values to the scope
-                    // that are defined in resolveObj
+                    // Only prepare dependencies, that are defined
+                    // in resolveObj
                     if (resolveObj[meta.attrName]) {
 
                         $scope[meta.attrName] = resolvedValues[index];
@@ -161,7 +161,19 @@ module at {
                 })
             };
 
-            return ['$scope'].concat(attributeMeta.map(meta => meta.attrName), controller)
+            let resolvedNames: string[] = [];
+
+            attributeMeta.forEach(meta => {
+
+                // Only prepare dependencies, that are defined
+                // in resolveObj
+                if(resolveObj[meta.attrName]) {
+
+                    resolvedNames.push(meta.attrName);
+                }
+            });
+
+            return (<any[]>['$scope']).concat(resolvedNames, controller)
         }
 
         /**

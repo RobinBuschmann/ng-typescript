@@ -9,13 +9,12 @@ module at {
   }
 
   export interface IComponentOptions {
+    componentName: string;
     templateUrl?: string;
     template?: string;
     controllerAs?: string;
     moduleName?: string;
     module?: IModule;
-    selector: string;
-    delegate?: typeof Delegate;
   }
 
   var componentDefaultOptions = {
@@ -27,18 +26,14 @@ module at {
   };
 
   export interface IPreLink {
-    onPreLink: (element: JQuery) => void;
+    onPreLink: (element?: JQuery) => void;
   }
   export interface IPostLink {
-    onPostLink: (element: JQuery) => void;
+    onPostLink: (element?: JQuery) => void;
   }
-
-  let delegateHandleMeta = {
-    name: "delegateHandle",
-    binding: "=",
-    isOptional: true,
-    scopeHash: "=?"
-  };
+  export interface IDestroy {
+    onDestroy: (element?: JQuery) => void;
+  }
 
   export function Component(options: IComponentOptions): at.IClassAnnotationDecorator {
     return (target: Function) => {
@@ -46,44 +41,13 @@ module at {
       var config: IComponentDirective =
         angular.extend({}, componentDefaultOptions, options || {});
 
-      target['__componentSelector'] = options.selector;
+      target['__componentName'] = options.componentName;
 
       // attribute meta data is defined through Attribute annotation
       let attributeMeta = target.prototype.__componentAttributes || [];
 
       config.controller = target;
       config.scope = {};
-
-      let factory;
-      let delegateService;
-
-      // process delegate stuff, if defined
-      if (options.delegate) {
-
-        if (!(<any>options.delegate.prototype).__delegateServiceName) {
-
-          throw new Error(`Delegate must have DelegateService annotation`);
-        }
-
-        /**
-         * @ngdoc directive
-         * @name delegateHandle
-         * @type string
-         * @restrict A
-         * @description Delegate handle key, which allows a consumer of a component,
-         *              to interact via a delegate with a component
-         */
-        attributeMeta.push(delegateHandleMeta);
-
-        // if delegate is defined, inject the specified delegate by its service name
-        factory = [(<any>options.delegate.prototype).__delegateServiceName, (__delegateService) => {
-          delegateService = __delegateService;
-          return config;
-        }]
-      } else {
-
-        factory = () => config;
-      }
 
       // set scope hashes for controller scope
       angular.forEach(attributeMeta, meta => {
@@ -92,15 +56,14 @@ module at {
 
       // If onPreLink or onPostLink is implemented by targets
       // prototype, prepare these events:
-      if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
+      if (target.prototype.onPreLink || target.prototype.onPostLink || target.prototype.onDestroy) {
 
         let link: {pre?: Function; post?: Function} = {};
 
-        if (target.prototype.onPreLink || options.delegate) {
+        if (target.prototype.onPreLink || target.prototype.onDestroy) {
           link.pre = (scope, element, attrs, componentInstance) => {
             if (componentInstance.onPreLink) componentInstance.onPreLink(element);
-            if (delegateService) delegateService.registerComponentInstance(componentInstance, componentInstance.delegateHandle);
-            if (delegateService) scope.$on('$destroy', () => delegateService.removeDelegate(componentInstance.delegateHandle));
+            if (componentInstance.onDestroy) scope.$on('$destroy', () => componentInstance.onDestroy(element));
           }
         }
         if (target.prototype.onPostLink) {
@@ -118,7 +81,7 @@ module at {
       }
 
       angular.module(config.moduleName || config.module.name)
-        .directive(config.selector, factory);
+        .directive(config.componentName, () => config);
     }
   }
 }

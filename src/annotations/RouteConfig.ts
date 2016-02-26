@@ -115,7 +115,7 @@ module at {
         config.controller = getController(attributeMeta, config.resolve);
       }
 
-      config.template = getTemplate(attributeMeta, config.component.__componentSelector, config.resolve);
+      config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
     }
 
     function processUrlRouterProviderOptions($urlRouterProvider) {
@@ -190,15 +190,15 @@ module at {
      * <spinner delay="{{}}"></spinner>
      *
      * @param attributeMeta
-     * @param selector
+     * @param componentName
      * @param resolveObj
      * @return {string} Template
      */
-    function getTemplate(attributeMeta, selector, resolveObj?) {
+    function getTemplate(attributeMeta, componentName, resolveObj?) {
       let templateAttrs = '';
       let endSymbol = _$interpolateProvider.endSymbol();
       let startSymbol = _$interpolateProvider.startSymbol();
-      let dashedSelector = toDash(selector);
+      let dashedSelector = toDash(componentName);
       const ONE_WAY_BINDING = '@';
       const LISTENER_BINDING = '&';
 

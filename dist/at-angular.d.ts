@@ -32,19 +32,21 @@ declare module at {
 declare module at {
     import IModule = angular.IModule;
     interface IComponentOptions {
+        componentName: string;
         templateUrl?: string;
         template?: string;
         controllerAs?: string;
         moduleName?: string;
         module?: IModule;
-        selector: string;
-        delegate?: typeof Delegate;
     }
     interface IPreLink {
-        onPreLink: (element: JQuery) => void;
+        onPreLink: (element?: JQuery) => void;
     }
     interface IPostLink {
-        onPostLink: (element: JQuery) => void;
+        onPostLink: (element?: JQuery) => void;
+    }
+    interface IDestroy {
+        onDestroy: (element?: JQuery) => void;
     }
     function Component(options: IComponentOptions): at.IClassAnnotationDecorator;
 }
@@ -53,9 +55,6 @@ declare module at {
         (moduleName: string, ctrlName: string): IClassAnnotationDecorator;
     }
     function Controller(moduleName: string, ctrlName: string): at.IClassAnnotationDecorator;
-}
-declare module at {
-    function DelegateService(moduleName: string, serviceName: string): at.IClassAnnotationDecorator;
 }
 declare module at {
     interface IDirectiveAnnotation {
@@ -74,6 +73,26 @@ declare module at {
         (...args: any[]): IClassAnnotationDecorator;
     }
     function Inject(...args: string[]): at.IClassAnnotationDecorator;
+}
+declare module at {
+    interface IListenerAttributeOptions {
+        /**
+         * @description Array of strings, which describes the parameters
+         *              that should be added to the event listener
+         * @example
+         *
+         *          In component class:
+         *
+         *          @ListenerAttribute({eventParamNames: ['$someObj']})
+         *
+         *          In html:
+         *
+         *          <some-component on-completed="onCompleted($someObj)"></some-component>
+         */
+        eventParamNames?: Array<string>;
+        name?: string;
+    }
+    function ListenerAttribute(options?: IListenerAttributeOptions): IMemberAnnotationDecorator;
 }
 declare module at {
     interface IProviderAnnotation {
@@ -179,27 +198,4 @@ declare module at {
         (moduleName: string, serviceName: string): IClassAnnotationDecorator;
     }
     function Service(moduleName: string, serviceName: string): at.IClassAnnotationDecorator;
-}
-declare module at {
-    abstract class Delegate<TComponent, TDelegate extends Delegate<any, any>> {
-        private delegates;
-        /**
-         * @internal
-         * @param handleKey
-         */
-        protected componentInstance: TComponent;
-        getByHandle(handleKey: string): TDelegate;
-        /**
-         * @internal
-         * @param handleKey
-         * @param componentInstance
-         */
-        protected createDelegate(componentInstance: TComponent, handleKey?: string): void;
-        /**
-         * @internal
-         * @param handleKey
-         */
-        protected removeDelegate(handleKey: string): void;
-        protected abstract getInstance(): TDelegate;
-    }
 }

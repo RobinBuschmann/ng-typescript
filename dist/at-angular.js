@@ -37,15 +37,13 @@ var at;
             if (!target.__componentAttributes) {
                 target.__componentAttributes = [];
             }
-            options = angular.extend({}, defaultAttributeOptions, options);
+            var metaData = angular.extend({}, defaultAttributeOptions, options);
+            metaData.propertyName = key;
+            metaData.name = options.name || key;
+            metaData.scopeHash = metaData.binding + (metaData.isOptional ? '?' : '') + (metaData.name);
+            target.__componentAttributes.push(metaData);
             // Add attribute meta data to the component meta data;
-            target.__componentAttributes.push({
-                key: key,
-                scopeHash: options.binding + (options.isOptional ? '?' : '') + (options.name),
-                isOptional: options.isOptional,
-                attrName: (options.name || key),
-                binding: options.binding
-            });
+            target.__componentAttributes.push();
         };
     }
     at.Attribute = Attribute;
@@ -82,42 +80,25 @@ var at;
     function Component(options) {
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
-            target['__componentSelector'] = options.selector;
+            target['__componentName'] = options.componentName;
+            // attribute meta data is defined through Attribute annotation
             var attributeMeta = target.prototype.__componentAttributes || [];
             config.controller = target;
             config.scope = {};
             // set scope hashes for controller scope
             angular.forEach(attributeMeta, function (meta) {
-                config.scope[meta.key] = meta.scopeHash;
+                config.scope[meta.propertyName] = meta.scopeHash;
             });
-            var factory;
-            var delegateService;
-            if (options.delegate) {
-                if (!options.delegate.prototype.__delegateServiceName) {
-                    throw new Error("Delegate must have DelegateService annotation");
-                }
-                setDelegateHandleAttribute(config.scope);
-                // if delegate is defined, inject the specified delegate by its service name
-                factory = [options.delegate.prototype.__delegateServiceName, function (__delegateService) {
-                        delegateService = __delegateService;
-                        return config;
-                    }];
-            }
-            else {
-                factory = function () { return config; };
-            }
             // If onPreLink or onPostLink is implemented by targets
             // prototype, prepare these events:
-            if (target.prototype.onPreLink || target.prototype.onPostLink || options.delegate) {
+            if (target.prototype.onPreLink || target.prototype.onPostLink || target.prototype.onDestroy) {
                 var link_1 = {};
-                if (target.prototype.onPreLink || options.delegate) {
+                if (target.prototype.onPreLink || target.prototype.onDestroy) {
                     link_1.pre = function (scope, element, attrs, componentInstance) {
                         if (componentInstance.onPreLink)
                             componentInstance.onPreLink(element);
-                        if (delegateService)
-                            delegateService.createDelegate(componentInstance, componentInstance.delegateHandle);
-                        if (delegateService)
-                            scope.$on('$destroy', function () { return delegateService.removeDelegate(componentInstance.delegateHandle); });
+                        if (componentInstance.onDestroy)
+                            scope.$on('$destroy', function () { return componentInstance.onDestroy(element); });
                     };
                 }
                 if (target.prototype.onPostLink) {
@@ -132,21 +113,10 @@ var at;
                 throw new Error('Either "moduleName" or "module" has to be defined');
             }
             angular.module(config.moduleName || config.module.name)
-                .directive(config.selector, factory);
+                .directive(config.componentName, function () { return config; });
         };
     }
     at.Component = Component;
-    /**
-     * @ngdoc directive
-     * @name delegateHandle
-     * @type string
-     * @restrict A
-     * @description Delegate handle key, which allows a consumer of a component,
-     *              to interact via a delegate with a component
-     */
-    function setDelegateHandleAttribute(scope) {
-        scope.delegateHandle = '=?';
-    }
 })(at || (at = {}));
 var at;
 (function (at) {
@@ -154,16 +124,6 @@ var at;
         return at.instantiate(moduleName, ctrlName, 'controller');
     }
     at.Controller = Controller;
-})(at || (at = {}));
-var at;
-(function (at) {
-    function DelegateService(moduleName, serviceName) {
-        return function (target) {
-            target.prototype.__delegateServiceName = serviceName;
-            angular.module(moduleName).service(serviceName, target);
-        };
-    }
-    at.DelegateService = DelegateService;
 })(at || (at = {}));
 var at;
 (function (at) {
@@ -227,6 +187,17 @@ var at;
         };
     }
     at.Inject = Inject;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function ListenerAttribute(options) {
+        if (options === void 0) { options = {}; }
+        // Attribute defaults for listener
+        options.isOptional = true;
+        options.binding = '&';
+        return at.Attribute(options);
+    }
+    at.ListenerAttribute = ListenerAttribute;
 })(at || (at = {}));
 var at;
 (function (at) {
@@ -366,7 +337,7 @@ var at;
             if (config.resolve) {
                 config.controller = getController(attributeMeta, config.resolve);
             }
-            config.template = getTemplate(attributeMeta, config.component.__componentSelector, config.resolve);
+            config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
         }
         function processUrlRouterProviderOptions($urlRouterProvider) {
             if (options.conditions) {
@@ -393,25 +364,18 @@ var at;
          * @return {string[]}
          */
         function getController(attributeMeta, resolveObj) {
-            var controller = function ($scope) {
-                var resolvedValues = Array.prototype.slice.call(arguments, 1);
-                attributeMeta.forEach(function (meta, index) {
-                    // Only prepare dependencies, that are defined
-                    // in resolveObj
-                    if (resolveObj[meta.attrName]) {
-                        $scope[meta.attrName] = resolvedValues[index];
-                    }
-                });
-            };
-            var resolvedNames = [];
-            attributeMeta.forEach(function (meta) {
+            var resolvedMetaData = attributeMeta.filter(function (meta) {
                 // Only prepare dependencies, that are defined
                 // in resolveObj
-                if (resolveObj[meta.attrName]) {
-                    resolvedNames.push(meta.attrName);
-                }
+                return !!resolveObj[meta.name];
             });
-            return ['$scope'].concat(resolvedNames, controller);
+            var controller = function ($scope) {
+                var resolvedValues = Array.prototype.slice.call(arguments, 1);
+                resolvedMetaData.forEach(function (meta, index) {
+                    return $scope[meta.name] = resolvedValues[index];
+                });
+            };
+            return ['$scope'].concat(resolvedMetaData.map(function (meta) { return meta.name; }), controller);
         }
         /**
          * Throws error, if there is no resolve configuration for
@@ -423,8 +387,8 @@ var at;
         function checkToResolvedAttributes(attributeMeta, resolveObj) {
             if (resolveObj === void 0) { resolveObj = {}; }
             angular.forEach(attributeMeta, function (meta) {
-                if (!resolveObj[meta.attrName] && !meta.isOptional) {
-                    throw new Error("There is no resolve object for \"" + meta.attrName + "\" attribute defined");
+                if (!resolveObj[meta.name] && !meta.isOptional) {
+                    throw new Error("There is no resolve object for \"" + meta.name + "\" attribute defined");
                 }
             });
         }
@@ -436,25 +400,36 @@ var at;
          * <spinner delay="{{}}"></spinner>
          *
          * @param attributeMeta
-         * @param selector
+         * @param componentName
          * @param resolveObj
          * @return {string} Template
          */
-        function getTemplate(attributeMeta, selector, resolveObj) {
+        function getTemplate(attributeMeta, componentName, resolveObj) {
             var templateAttrs = '';
             var endSymbol = _$interpolateProvider.endSymbol();
             var startSymbol = _$interpolateProvider.startSymbol();
-            var dashedSelector = toDash(selector);
+            var dashedSelector = toDash(componentName);
             var ONE_WAY_BINDING = '@';
+            var LISTENER_BINDING = '&';
             // It is only necessary to add attributes if there are resolved
             // in the templates scope
             if (resolveObj) {
                 angular.forEach(attributeMeta, function (meta) {
                     // It is only necessary to add attributes to the component
                     // that are defined in resolveObj
-                    if (resolveObj[meta.attrName]) {
-                        templateAttrs += toDash(meta.attrName) + "=\"" + (meta.binding === ONE_WAY_BINDING ?
-                            (startSymbol + meta.attrName + endSymbol) : meta.attrName) + "\" ";
+                    if (resolveObj[meta.name]) {
+                        var value = void 0;
+                        switch (meta.binding) {
+                            case ONE_WAY_BINDING:
+                                value = (startSymbol + meta.name + endSymbol);
+                                break;
+                            case LISTENER_BINDING:
+                                value = meta.name + "(" + (meta.eventParamNames ? meta.eventParamNames.join(',') : '') + ")";
+                                break;
+                            default:
+                                value = meta.name;
+                        }
+                        templateAttrs += toDash(meta.name) + "=\"" + value + "\" ";
                     }
                 });
             }
@@ -474,53 +449,5 @@ var at;
         return at.instantiate(moduleName, serviceName, 'service');
     }
     at.Service = Service;
-})(at || (at = {}));
-var at;
-(function (at) {
-    var Delegate = (function () {
-        function Delegate() {
-            this.delegates = {};
-        }
-        Delegate.prototype.getByHandle = function (handleKey) {
-            var delegate = this.delegates[handleKey];
-            if (delegate) {
-                return delegate;
-            }
-            throw new Error("Delegate with handle key " + handleKey + " does not exist");
-        };
-        /**
-         * @internal
-         * @param handleKey
-         * @param componentInstance
-         */
-        Delegate.prototype.createDelegate = function (componentInstance, handleKey) {
-            if (handleKey === void 0) { handleKey = null; }
-            if (handleKey) {
-                if (this.delegates[handleKey]) {
-                    throw new Error("Delegate with handle key " + handleKey + " already exist");
-                }
-                var delegate = this.getInstance();
-                delegate['componentInstance'] = componentInstance;
-                this.delegates[handleKey] = delegate;
-            }
-            else {
-                // if no handle key is provided, set current instance
-                // to the delegate of the specified component instance
-                // as fall back
-                this.componentInstance = componentInstance;
-            }
-        };
-        /**
-         * @internal
-         * @param handleKey
-         */
-        Delegate.prototype.removeDelegate = function (handleKey) {
-            if (handleKey && this.delegates[handleKey]) {
-                this.delegates[handleKey] = null;
-            }
-        };
-        return Delegate;
-    }());
-    at.Delegate = Delegate;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular.js.map

@@ -1,63 +1,129 @@
 module at {
 
+    // TODO has to be reconsidered
+
+    export interface IObservable<T> {
+
+        subscribe(subscriber: (item: T) => any)
+        unSubscribe(subscriber: (item: T) => any)
+    }
+
+    class Observable<T> implements IObservable<T> {
+
+        private subscriber: Array<(item: T) => any>;
+
+        constructor(private item?: T) {
+
+            this.subscriber = [];
+        }
+
+        set(item: T) {
+            this.item = item;
+            this.trigger();
+        }
+
+        reset() {
+            this.item = null;
+        }
+
+        subscribe(subscriber: (item: T) => any) {
+
+            this.subscriber.push(subscriber);
+        }
+
+        unSubscribe(subscriber: (item: T) => any) {
+
+            let index = this.subscriber.indexOf(subscriber);
+
+            if (index !== -1) {
+
+                this.subscriber.splice(index, 1);
+            }
+        }
+
+        private trigger() {
+
+            this.subscriber.forEach(subscriber => subscriber(this.item));
+
+        }
+    }
+
     export abstract class Delegate<TComponent, TDelegate extends Delegate<any, any>> {
 
         private delegates: {[handleKey: string]: TDelegate} = {};
+        private componentInstanceObservable: Observable<TComponent>;
 
-        /**
-         * @internal
-         * @param handleKey
-         */
-        protected componentInstance: TComponent;
+
+        constructor(protected $q: ng.IQService) {
+
+            this.componentInstanceObservable = new Observable<TComponent>();
+
+        }
 
         getByHandle(handleKey: string): TDelegate {
 
-            let delegate = this.delegates[handleKey];
+            if (!this.delegates[handleKey]) {
 
-            if (delegate) {
-
-                return delegate;
+                this.createDelegate(handleKey);
             }
 
-            throw new Error(`Delegate with handle key ${handleKey} does not exist`);
+            return this.delegates[handleKey];
         }
 
         /**
          * @internal
-         * @param handleKey
-         * @param componentInstance
+         * @return {IPromise<TResult>}
          */
-        protected createDelegate(componentInstance: TComponent, handleKey: string = null) {
+        protected componentInstance(): IObservable<TComponent> {
+
+            return this.componentInstanceObservable;
+        }
+
+        /**
+         * @internal
+         */
+        protected registerComponentInstance(componentInstance: TComponent, handleKey?: string) {
+
+            let delegate;
 
             if (handleKey) {
 
-                if (this.delegates[handleKey]) {
-                    throw new Error(`Delegate with handle key ${handleKey} already exist`);
+                if (!this.delegates[handleKey]) {
+
+                    this.createDelegate(handleKey);
                 }
 
-                let delegate = this.getInstance();
-                delegate['componentInstance'] = componentInstance;
-
-                this.delegates[handleKey] = delegate;
-
+                delegate = this.delegates[handleKey];
             } else {
 
-                // if no handle key is provided, set current instance
-                // to the delegate of the specified component instance
-                // as fall back
-                this.componentInstance = componentInstance;
+                delegate = this;
             }
+
+            delegate.componentInstanceObservable.set(componentInstance);
+
         }
 
         /**
          * @internal
          * @param handleKey
          */
-        protected removeDelegate(handleKey: string) {
+        protected createDelegate(handleKey: string) {
+
+            this.delegates[handleKey] = this.getInstance();
+        }
+
+        /**
+         * @internal
+         * @param handleKey
+         */
+        protected removeDelegate(handleKey?: string) {
 
             if (handleKey && this.delegates[handleKey]) {
 
                 this.delegates[handleKey] = null;
+            } else if (!handleKey) {
+
+                this.componentInstanceObservable.reset();
             }
         }
 

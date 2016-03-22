@@ -11,10 +11,8 @@ pids
 .idea
 
 # Teemporary directory
-.tmp/
-.ts-tmp/
-.grunt-ts-tmp/
 coverage/
+test/.tmp/
 
 # Dependency directory
 node_modules/

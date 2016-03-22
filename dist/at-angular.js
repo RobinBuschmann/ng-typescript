@@ -89,8 +89,8 @@ var at;
             angular.forEach(attributeMeta, function (meta) {
                 config.scope[meta.propertyName] = meta.scopeHash;
             });
-            // If onPreLink or onPostLink is implemented by targets
-            // prototype, prepare these events:
+            // If onPreLink, onPostLink or onDestroy are implemented by
+            // targets prototype, prepare these events:
             if (target.prototype.onPreLink || target.prototype.onPostLink || target.prototype.onDestroy) {
                 var link_1 = {};
                 if (target.prototype.onPreLink || target.prototype.onDestroy) {
@@ -317,13 +317,13 @@ var at;
                     angular.forEach(options.stateConfigs, function (config) {
                         // process config for unnamed view
                         if ('component' in config) {
-                            processComponent(config);
+                            processView(config);
                         }
                         // process configs for named views
                         if (config.views) {
                             for (var key in config.views) {
                                 if (config.views.hasOwnProperty(key)) {
-                                    processComponent(config.views[key]);
+                                    processView(config.views[key]);
                                 }
                             }
                         }
@@ -331,7 +331,13 @@ var at;
                     });
                 }]);
         };
-        function processComponent(config) {
+        /**
+         * Resolves wrapped RouteConfig to $stateProvider
+         * state configurations for one view
+         *
+         * @param config
+           */
+        function processView(config) {
             var attributeMeta = config.component.prototype.__componentAttributes || [];
             checkToResolvedAttributes(attributeMeta, config.resolve);
             if (config.resolve) {
@@ -339,6 +345,27 @@ var at;
             }
             config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
         }
+        /**
+         * Prepares the $urlRouterProvider configurations "when", "rule", "otherwise" and "deferIntercept"
+         * @example
+         *
+         * from RouterConfig options:
+         *    {
+         *        conditions: [{when: '/', then: '/user'}],
+         *        rules: [function rule1(){ .. }, function rule2() { .. }],
+         *        otherwise: '/home',
+         *        deferIntercept: true
+         *    }
+         * to $urlRouterProvider configuration:
+         *
+         *    $urlRouterProvider.when(conditions[0].when, conditions[0].then);
+         *    $urlRouterProvider.rule(rules[0]);
+         *    $urlRouterProvider.otherwise(otherwise);
+         *    $urlRouterProvider.deferIntercept(deferIntercept);
+         *
+         *
+         * @param $urlRouterProvider
+           */
         function processUrlRouterProviderOptions($urlRouterProvider) {
             if (options.conditions) {
                 angular.forEach(options.conditions, function (condition) { return $urlRouterProvider.when(condition.when, condition.then); });
@@ -435,6 +462,15 @@ var at;
             }
             return "<" + dashedSelector + " " + templateAttrs + "></" + dashedSelector + ">";
         }
+        /**
+         * Converts camelcase to dashed case
+         *
+         * @example
+         *    "thatIsGreat" > "that-is-great"
+         *
+         * @param str
+         * @return {any}
+           */
         function toDash(str) {
             return str.replace(/([A-Z])/g, function ($1) {
                 return "-" + $1.toLowerCase();

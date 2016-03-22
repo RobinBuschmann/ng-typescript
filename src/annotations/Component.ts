@@ -54,8 +54,8 @@ module at {
         config.scope[meta.propertyName] = meta.scopeHash;
       });
 
-      // If onPreLink or onPostLink is implemented by targets
-      // prototype, prepare these events:
+      // If onPreLink, onPostLink or onDestroy are implemented by
+      // targets prototype, prepare these events:
       if (target.prototype.onPreLink || target.prototype.onPostLink || target.prototype.onDestroy) {
 
         let link: {pre?: Function; post?: Function} = {};

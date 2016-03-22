@@ -12,12 +12,24 @@
   ],
   "author": "Jakub Strojewski <jakub.strojewski@gmail.com>",
   "license": "WTFPL",
+  "scripts": {
+    "compile:test": "./node_modules/typescript/bin/tsc --project test",
+    "clear:test": "rimraf test/.tmp",
+    "build:test": "npm run clear:test && npm run compile:test",
+    "coverage": "./node_modules/remap-istanbul/bin/remap-istanbul -i coverage/coverage-final.json -o coverage -t html",
+    "test": "npm run build:test && ./node_modules/karma/bin/karma start --single-run && npm run clear:test && npm run coverage",
+    "test:chrome": "npm run build:test && ./node_modules/karma/bin/karma start && npm run clear:test && npm run coverage"
+  },
   "main": "dist/at-angular.js",
   "typescript": {
     "definition": "dist/at-angular.d.ts"
   },
   "dependencies": {},
   "devDependencies": {
+    "angular": "^1.5.0",
+    "angular-mocks": "^1.5.0",
+    "angular-ui-router": "^0.2.18",
+    "chai": "^3.5.0",
     "coveralls": "2.11.4",
     "del": "2.0.2",
     "grunt": "^0.4.5",
@@ -27,17 +39,27 @@
     "gulp-tslint": " 3.3.0-beta",
     "gulp-typescript": "2.9.0",
     "jasmine-core": "2.3.4",
-    "karma": "0.13.10",
-    "karma-chrome-launcher": "0.2.0",
+    "karma": "^0.13.19",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^0.2.0",
     "karma-coffee-preprocessor": "0.3.0",
-    "karma-coverage": "0.5.2",
+    "karma-coverage": "^0.5.2",
     "karma-jasmine": "0.3.6",
-    "karma-phantomjs-launcher": "0.2.1",
+    "karma-mocha": "^0.2.2",
+    "karma-phantomjs-launcher": "^0.2.3",
+    "karma-sinon-chai": "^1.2.0",
     "load-grunt-tasks": "^3.3.0",
+    "lolex": "^1.4.0",
     "merge-stream": "1.0.0",
+    "mocha": "^2.4.5",
+    "phantomjs": "^2.1.3",
+    "remap-istanbul": "^0.5.1",
     "require-dir": "0.3.0",
+    "rimraf": "^2.5.2",
     "run-sequence": "1.1.4",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0",
     "time-grunt": "^1.2.2",
-    "typescript": "1.6.2"
+    "typescript": "^1.8.2"
   }
 }

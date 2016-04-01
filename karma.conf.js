@@ -11,6 +11,8 @@ module.exports = function (config) {
             './node_modules/angular-ui-router/release/angular-ui-router.js',
             './dist/at-angular.js',
             './test/.tmp/module.js',
+            './test/.tmp/attr2Directive.js',
+            './test/.tmp/attrDirective.js',
             './test/.tmp/Component.js',
             {pattern: './test/.tmp/**/*.js', included: true}
         ],

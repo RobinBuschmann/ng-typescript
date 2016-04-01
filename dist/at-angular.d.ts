@@ -101,6 +101,18 @@ declare module at {
     function Provider(moduleName: string, serviceName: string): at.IClassAnnotationDecorator;
 }
 declare module at {
+    /**
+     * Processes required controller for defined property.
+     * Property is initialized with controller instance
+     * of required component or directive with preLink.
+     *
+     * @param option Name of component or directive with require specification (^, ^^)
+     * @return {function(any, string): void}
+     * @constructor
+       */
+    function RequiredCtrl(option: string): IMemberAnnotationDecorator;
+}
+declare module at {
     import IResourceArray = angular.resource.IResourceArray;
     class ResourceClass<T> implements angular.resource.IResource<T> {
         $promise: angular.IPromise<T>;

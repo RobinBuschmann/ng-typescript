@@ -1,6 +1,7 @@
 
 
 import Component = at.test.Component;
+import AttrController = at.test.AttrController;
 describe('@Component', () => {
 
     const expect = chai.expect;
@@ -30,9 +31,12 @@ describe('@Component', () => {
 
         // create and compile component element
         componentElement = angular.element(`
-                    <component some-attribute="someString"
+                    <component attr
+                               attr2
+                               some-attribute="someString"
                                another-attribute="someNumber"
-                               some-listener="someListener($someAttribute)"></component>`);
+                               some-listener="someListener($someAttribute)"></component>
+                               `);
         $compile(componentElement)($scope);
         $rootScope.$digest();
 
@@ -86,6 +90,16 @@ describe('@Component', () => {
     it('should call component events (onPreLink, onPostLink) in order', () => {
 
         expect(componentController.onPreLink).to.has.been.calledBefore(<any>componentController.onPostLink);
+    });
+
+    it('should have attrCtrl, which is an instance of AttrController', () => {
+
+        expect(componentController.attrCtrl).to.be.instanceOf(at.test.AttrController);
+    });
+
+    it('should have attr2Ctrl, which is an instance of Attr2Controller', () => {
+
+        expect(componentController.attr2Ctrl).to.be.instanceOf(at.test.Attr2Controller);
     });
 
 });

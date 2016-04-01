@@ -13,6 +13,12 @@ namespace at.test {
     @at.Inject('serviceA', 'serviceB')
     export class Component implements at.IPostLink, at.IPreLink, at.IDestroy{
 
+        @at.RequiredCtrl('^attr')
+        attrCtrl: AttrController;
+
+        @at.RequiredCtrl('^attr2')
+        attr2Ctrl: Attr2Controller;
+
         @at.Attribute()
         someAttribute: string;
 

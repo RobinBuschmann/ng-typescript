@@ -81,8 +81,12 @@ var at;
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
             target['__componentName'] = options.componentName;
-            // attribute meta data is defined through Attribute annotation
+            // attribute meta data is defined in Attribute annotation
             var attributeMeta = target.prototype.__componentAttributes || [];
+            // required controller meta data is defined in RequiredCtrl annotation
+            var requiredCtrlMeta = target.prototype.__requiredControllers || [];
+            // add required elements to directive config
+            config.require = requiredCtrlMeta.map(function (value) { return value.option; });
             config.controller = target;
             config.scope = {};
             // set scope hashes for controller scope
@@ -91,10 +95,24 @@ var at;
             });
             // If onPreLink, onPostLink or onDestroy are implemented by
             // targets prototype, prepare these events:
-            if (target.prototype.onPreLink || target.prototype.onPostLink || target.prototype.onDestroy) {
+            if (target.prototype.onPreLink
+                || target.prototype.onPostLink
+                || target.prototype.onDestroy
+                || requiredCtrlMeta.length) {
                 var link_1 = {};
-                if (target.prototype.onPreLink || target.prototype.onDestroy) {
-                    link_1.pre = function (scope, element, attrs, componentInstance) {
+                if (target.prototype.onPreLink
+                    || target.prototype.onDestroy
+                    || requiredCtrlMeta.length) {
+                    link_1.pre = function (scope, element, attrs, requiredCtrlInstances) {
+                        // ensure that requiredCtrlInstances parameter is always an array
+                        requiredCtrlInstances = requiredCtrlInstances ? [].concat(requiredCtrlInstances) : [];
+                        // retrieve component instance from scope, through controllerAs name
+                        var componentInstance = scope[config.controllerAs];
+                        // initialized required controller instances to component instance
+                        requiredCtrlInstances.forEach(function (instance, index) {
+                            componentInstance[requiredCtrlMeta[index].key] = instance;
+                        });
+                        // process registered event handlers
                         if (componentInstance.onPreLink)
                             componentInstance.onPreLink(element);
                         if (componentInstance.onDestroy)
@@ -102,11 +120,14 @@ var at;
                     };
                 }
                 if (target.prototype.onPostLink) {
-                    link_1.post = function (scope, element, attrs, componentInstance) {
+                    link_1.post = function (scope, element) {
+                        // retrieve component instance from scope, through controllerAs name
+                        var componentInstance = scope[config.controllerAs];
                         if (componentInstance.onPostLink)
                             componentInstance.onPostLink(element);
                     };
                 }
+                // add link to directive config
                 config.compile = function () { return link_1; };
             }
             if (!config.moduleName && !config.module) {
@@ -205,6 +226,29 @@ var at;
         return at.instantiate(moduleName, serviceName, 'provider');
     }
     at.Provider = Provider;
+})(at || (at = {}));
+var at;
+(function (at) {
+    /**
+     * Processes required controller for defined property.
+     * Property is initialized with controller instance
+     * of required component or directive with preLink.
+     *
+     * @param option Name of component or directive with require specification (^, ^^)
+     * @return {function(any, string): void}
+     * @constructor
+       */
+    function RequiredCtrl(option) {
+        return function (target, key) {
+            // will be used in "component" annotation
+            if (!target.__requiredControllers) {
+                target.__requiredControllers = [];
+            }
+            // Add required controller meta data to the component meta data;
+            target.__requiredControllers.push({ key: key, option: option });
+        };
+    }
+    at.RequiredCtrl = RequiredCtrl;
 })(at || (at = {}));
 var at;
 (function (at) {

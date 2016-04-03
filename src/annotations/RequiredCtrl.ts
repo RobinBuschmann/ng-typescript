@@ -1,9 +1,9 @@
 module at {
 
   /**
-   * Processes required controller for defined property.
+   * Processes required controller for components property.
    * Property is initialized with controller instance
-   * of required component or directive with preLink.
+   * of required component or directive through preLink.
    *
    * @param option Name of component or directive with require specification (^, ^^)
    * @return {function(any, string): void}

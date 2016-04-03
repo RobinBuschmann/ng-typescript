@@ -35,12 +35,20 @@ module at {
         onDestroy: (element?: JQuery) => void;
     }
 
+    /**
+     * Creates an angular directive in component style
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+     */
     export function Component(options: IComponentOptions): at.IClassAnnotationDecorator {
         return (target: Function) => {
 
             var config: IComponentDirective =
                 angular.extend({}, componentDefaultOptions, options || {});
 
+            // store component name, to be accessible from native js object
             target['__componentName'] = options.componentName;
 
             // attribute meta data is defined in Attribute annotation
@@ -52,7 +60,10 @@ module at {
             // add required elements to directive config
             config.require = requiredCtrlMeta.map(value => value.option);
 
+            // set target class as controller
             config.controller = target;
+
+            // init isolated scope
             config.scope = {};
 
             // set scope hashes for controller scope
@@ -97,6 +108,7 @@ module at {
                         // retrieve component instance from scope, through controllerAs name
                         const componentInstance = scope[config.controllerAs];
 
+                        // process registered event handlers
                         if (componentInstance.onPostLink) componentInstance.onPostLink(element);
                     }
                 }

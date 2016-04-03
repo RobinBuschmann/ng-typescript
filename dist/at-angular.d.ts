@@ -21,6 +21,13 @@ declare module at {
         name?: string;
         isOptional?: boolean;
     }
+    /**
+     * Prepares attributes for component directives.
+     *
+     * @param options
+     * @return {function(any, string): void}
+     * @annotation
+       */
     function Attribute(options?: IAttributeOptions): IMemberAnnotationDecorator;
 }
 declare module at {
@@ -48,6 +55,13 @@ declare module at {
     interface IDestroy {
         onDestroy: (element?: JQuery) => void;
     }
+    /**
+     * Creates an angular directive in component style
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+     */
     function Component(options: IComponentOptions): at.IClassAnnotationDecorator;
 }
 declare module at {
@@ -92,6 +106,17 @@ declare module at {
         eventParamNames?: Array<string>;
         name?: string;
     }
+    /**
+     * Prepares "listener" attributes for component directives.
+     * The consumer of the corresponding component can pass
+     * event listeners to this attribute. This attribute is
+     * defined for a specified action. Every time this action
+     * occurs, the event listener will be executed.
+     *
+     * @param options
+     * @return {IMemberAnnotationDecorator}
+     * @annotation
+       */
     function ListenerAttribute(options?: IListenerAttributeOptions): IMemberAnnotationDecorator;
 }
 declare module at {
@@ -102,9 +127,9 @@ declare module at {
 }
 declare module at {
     /**
-     * Processes required controller for defined property.
+     * Processes required controller for components property.
      * Property is initialized with controller instance
-     * of required component or directive with preLink.
+     * of required component or directive through preLink.
      *
      * @param option Name of component or directive with require specification (^, ^^)
      * @return {function(any, string): void}
@@ -203,6 +228,15 @@ declare module at {
         otherwise?: string | Function;
         deferIntercept?: boolean;
     }
+    /**
+     * This is a configuration wrapper for the ui-router.
+     * It makes it possible to define states, configured
+     * with components instead of views and controllers.
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+       */
     function RouteConfig(options: IRouteConfigOptions): at.IClassAnnotationDecorator;
 }
 declare module at {

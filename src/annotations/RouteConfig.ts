@@ -68,6 +68,15 @@ module at {
     deferIntercept?: boolean
   }
 
+  /**
+   * This is a configuration wrapper for the ui-router.
+   * It makes it possible to define states, configured
+   * with components instead of views and controllers.
+   *
+   * @param options
+   * @return {function(Function): void}
+   * @annotation
+     */
   export function RouteConfig(options: IRouteConfigOptions): at.IClassAnnotationDecorator {
     let _$interpolateProvider;
 
@@ -226,7 +235,7 @@ module at {
       let endSymbol = _$interpolateProvider.endSymbol();
       let startSymbol = _$interpolateProvider.startSymbol();
       let dashedSelector = toDash(componentName);
-      const ONE_WAY_BINDING = '@';
+      const SIMPLE_STRING_BINDING = '@';
       const LISTENER_BINDING = '&';
 
       // It is only necessary to add attributes if there are resolved
@@ -242,7 +251,7 @@ module at {
             let value;
 
             switch(meta.binding) {
-              case ONE_WAY_BINDING:
+              case SIMPLE_STRING_BINDING:
                     value = (startSymbol + meta.name + endSymbol);
                     break;
               case LISTENER_BINDING:

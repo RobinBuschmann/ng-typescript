@@ -12,6 +12,13 @@ module at {
     isOptional: false
   };
 
+  /**
+   * Prepares attributes for component directives.
+   * 
+   * @param options
+   * @return {function(any, string): void}
+   * @annotation
+     */
   export function Attribute(options: IAttributeOptions = {}): IMemberAnnotationDecorator {
 
     return (target: any, key: string) => {

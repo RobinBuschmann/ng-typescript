@@ -19,6 +19,17 @@ module at {
     name?: string;
   }
 
+  /**
+   * Prepares "listener" attributes for component directives.
+   * The consumer of the corresponding component can pass
+   * event listeners to this attribute. This attribute is
+   * defined for a specified action. Every time this action
+   * occurs, the event listener will be executed.
+   *
+   * @param options
+   * @return {IMemberAnnotationDecorator}
+   * @annotation
+     */
   export function ListenerAttribute(options: IListenerAttributeOptions = {}): IMemberAnnotationDecorator {
 
     // Attribute defaults for listener

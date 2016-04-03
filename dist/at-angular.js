@@ -30,6 +30,13 @@ var at;
         name: '',
         isOptional: false
     };
+    /**
+     * Prepares attributes for component directives.
+     *
+     * @param options
+     * @return {function(any, string): void}
+     * @annotation
+       */
     function Attribute(options) {
         if (options === void 0) { options = {}; }
         return function (target, key) {
@@ -77,9 +84,17 @@ var at;
         bindToController: true,
         controller: null
     };
+    /**
+     * Creates an angular directive in component style
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+     */
     function Component(options) {
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
+            // store component name, to be accessible from native js object
             target['__componentName'] = options.componentName;
             // attribute meta data is defined in Attribute annotation
             var attributeMeta = target.prototype.__componentAttributes || [];
@@ -87,7 +102,9 @@ var at;
             var requiredCtrlMeta = target.prototype.__requiredControllers || [];
             // add required elements to directive config
             config.require = requiredCtrlMeta.map(function (value) { return value.option; });
+            // set target class as controller
             config.controller = target;
+            // init isolated scope
             config.scope = {};
             // set scope hashes for controller scope
             angular.forEach(attributeMeta, function (meta) {
@@ -123,6 +140,7 @@ var at;
                     link_1.post = function (scope, element) {
                         // retrieve component instance from scope, through controllerAs name
                         var componentInstance = scope[config.controllerAs];
+                        // process registered event handlers
                         if (componentInstance.onPostLink)
                             componentInstance.onPostLink(element);
                     };
@@ -211,6 +229,17 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
+    /**
+     * Prepares "listener" attributes for component directives.
+     * The consumer of the corresponding component can pass
+     * event listeners to this attribute. This attribute is
+     * defined for a specified action. Every time this action
+     * occurs, the event listener will be executed.
+     *
+     * @param options
+     * @return {IMemberAnnotationDecorator}
+     * @annotation
+       */
     function ListenerAttribute(options) {
         if (options === void 0) { options = {}; }
         // Attribute defaults for listener
@@ -230,9 +259,9 @@ var at;
 var at;
 (function (at) {
     /**
-     * Processes required controller for defined property.
+     * Processes required controller for components property.
      * Property is initialized with controller instance
-     * of required component or directive with preLink.
+     * of required component or directive through preLink.
      *
      * @param option Name of component or directive with require specification (^, ^^)
      * @return {function(any, string): void}
@@ -348,6 +377,15 @@ var at;
 ///<reference path="../../typings/tsd.d.ts"/>
 var at;
 (function (at) {
+    /**
+     * This is a configuration wrapper for the ui-router.
+     * It makes it possible to define states, configured
+     * with components instead of views and controllers.
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+       */
     function RouteConfig(options) {
         var _$interpolateProvider;
         return function (target) {
@@ -480,7 +518,7 @@ var at;
             var endSymbol = _$interpolateProvider.endSymbol();
             var startSymbol = _$interpolateProvider.startSymbol();
             var dashedSelector = toDash(componentName);
-            var ONE_WAY_BINDING = '@';
+            var SIMPLE_STRING_BINDING = '@';
             var LISTENER_BINDING = '&';
             // It is only necessary to add attributes if there are resolved
             // in the templates scope
@@ -491,7 +529,7 @@ var at;
                     if (resolveObj[meta.name]) {
                         var value = void 0;
                         switch (meta.binding) {
-                            case ONE_WAY_BINDING:
+                            case SIMPLE_STRING_BINDING:
                                 value = (startSymbol + meta.name + endSymbol);
                                 break;
                             case LISTENER_BINDING:

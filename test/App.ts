@@ -10,6 +10,9 @@ namespace at.test {
     export const APP_STATE_URL = '/';
     export const APP_STATE_DEFER_INTERCEPT = true;
     export const APP_STATE_OTHERWISE = '/';
+    export const ION_STATE_NAME = 'ion';
+    export const ION_STATE_URL = '/ion';
+    export const ION_STATE_DEFER_INTERCEPT = false;
 
     @at.RouteConfig({
         module,
@@ -31,6 +34,18 @@ namespace at.test {
                             someAttribute: () => RESOLVED_SOME_ATTRIBUTE,
                             anotherAttribute: () => RESOLVED_ANOTHER_ATTRIBUTE
                         }
+                    }
+                }
+            },
+            {
+                name: ION_STATE_NAME,
+                url: ION_STATE_URL,
+
+                ionView: IonViewA,
+
+                views: {
+                    main: {
+                        ionView: IonViewA
                     }
                 }
             }

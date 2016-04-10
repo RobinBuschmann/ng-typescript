@@ -13,12 +13,13 @@ module.exports = function (config) {
             './test/.tmp/module.js',
             './test/.tmp/attr2Directive.js',
             './test/.tmp/attrDirective.js',
+            './test/.tmp/IonViewA.js',
             './test/.tmp/Component.js',
             {pattern: './test/.tmp/**/*.js', included: true}
         ],
 
         browsers: ['PhantomJS'],
-        //browsers: ['Chrome'],
+        // browsers: ['Chrome'],
 
         // coverage reporter generates the coverage
         reporters: ['progress', 'coverage'],

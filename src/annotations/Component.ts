@@ -20,7 +20,7 @@ module at {
     var componentDefaultOptions = {
         restrict: 'E',
         controllerAs: 'vm',
-        transclude: true,
+        transclude: false,
         bindToController: true,
         controller: null
     };

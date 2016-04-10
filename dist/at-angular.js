@@ -1,4 +1,3 @@
-///<reference path="../typings/tsd.d.ts"/>
 var at;
 (function (at) {
     'use strict';
@@ -80,7 +79,7 @@ var at;
     var componentDefaultOptions = {
         restrict: 'E',
         controllerAs: 'vm',
-        transclude: true,
+        transclude: false,
         bindToController: true,
         controller: null
     };
@@ -230,6 +229,24 @@ var at;
 var at;
 (function (at) {
     /**
+     * Stores meta data for configuring a ionic view for
+     * ui.router through RouteConfig;
+     * Ionic framework is required.
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+     */
+    function IonView(options) {
+        return function (target) {
+            target['__ionView'] = options;
+        };
+    }
+    at.IonView = IonView;
+})(at || (at = {}));
+var at;
+(function (at) {
+    /**
      * Prepares "listener" attributes for component directives.
      * The consumer of the corresponding component can pass
      * event listeners to this attribute. This attribute is
@@ -374,7 +391,6 @@ var at;
     }
     at.UseAsDefault = UseAsDefault;
 })(at || (at = {}));
-///<reference path="../../typings/tsd.d.ts"/>
 var at;
 (function (at) {
     /**
@@ -385,7 +401,7 @@ var at;
      * @param options
      * @return {function(Function): void}
      * @annotation
-       */
+     */
     function RouteConfig(options) {
         var _$interpolateProvider;
         return function (target) {
@@ -398,7 +414,7 @@ var at;
                     processUrlRouterProviderOptions($urlRouterProvider);
                     angular.forEach(options.stateConfigs, function (config) {
                         // process config for unnamed view
-                        if ('component' in config) {
+                        if ('component' in config || 'ionView' in config) {
                             processView(config);
                         }
                         // process configs for named views
@@ -414,18 +430,41 @@ var at;
                 }]);
         };
         /**
-         * Resolves wrapped RouteConfig to $stateProvider
+         * Resolves wrapped RouteConfig configuration to $stateProvider
          * state configurations for one view
          *
          * @param config
-           */
+         */
         function processView(config) {
-            var attributeMeta = config.component.prototype.__componentAttributes || [];
-            checkToResolvedAttributes(attributeMeta, config.resolve);
-            if (config.resolve) {
-                config.controller = getController(attributeMeta, config.resolve);
+            if (config.component) {
+                if (!config.component.__componentName) {
+                    throw new Error('Value for component attribute has to be a with @Component decorated class');
+                }
+                var attributeMeta = config.component.prototype.__componentAttributes || [];
+                checkToResolvedAttributes(attributeMeta, config.resolve);
+                if (config.resolve) {
+                    config.controller = getController(attributeMeta, config.resolve);
+                }
+                config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
             }
-            config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
+            else if (config.ionView) {
+                if (!config.ionView.__ionView) {
+                    throw new Error('Value for ionView attribute has to be a with @IonView decorated class');
+                }
+                config.controller = config.ionView;
+                if (config.ionView.__ionView.template) {
+                    config.template = config.ionView.__ionView.template;
+                }
+                else if (config.ionView.__ionView.templateUrl) {
+                    config.templateUrl = config.ionView.__ionView.templateUrl;
+                }
+                else {
+                    throw new Error('Either template or templateUrl has to be defined for ionView');
+                }
+            }
+            else {
+                throw new Error('View configuration needs either an ionView or component attribute');
+            }
         }
         /**
          * Prepares the $urlRouterProvider configurations "when", "rule", "otherwise" and "deferIntercept"
@@ -433,11 +472,11 @@ var at;
          *
          * from RouterConfig options:
          *    {
-         *        conditions: [{when: '/', then: '/user'}],
-         *        rules: [function rule1(){ .. }, function rule2() { .. }],
-         *        otherwise: '/home',
-         *        deferIntercept: true
-         *    }
+     *        conditions: [{when: '/', then: '/user'}],
+     *        rules: [function rule1(){ .. }, function rule2() { .. }],
+     *        otherwise: '/home',
+     *        deferIntercept: true
+     *    }
          * to $urlRouterProvider configuration:
          *
          *    $urlRouterProvider.when(conditions[0].when, conditions[0].then);
@@ -447,7 +486,7 @@ var at;
          *
          *
          * @param $urlRouterProvider
-           */
+         */
         function processUrlRouterProviderOptions($urlRouterProvider) {
             if (options.conditions) {
                 angular.forEach(options.conditions, function (condition) { return $urlRouterProvider.when(condition.when, condition.then); });
@@ -552,7 +591,7 @@ var at;
          *
          * @param str
          * @return {any}
-           */
+         */
         function toDash(str) {
             return str.replace(/([A-Z])/g, function ($1) {
                 return "-" + $1.toLowerCase();

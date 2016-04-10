@@ -1,4 +1,3 @@
-///<reference path="../typings/tsd.d.ts"/>
 
 // Support AMD require
 // and SystemJS import

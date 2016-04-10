@@ -1,17 +1,18 @@
-import IonViewA = at.test.IonViewA;
+
+import ViewA = at.test.ViewA;
 describe('@RouteConfig', () => {
 
     const expect = chai.expect;
 
     let appState: any;
-    let ionState: any;
+    let viewState: any;
 
     beforeEach(() => angular.mock.module(at.test.MODULE_NAME));
 
     beforeEach(angular.mock.inject(($state: ng.ui.IStateService) => {
 
         appState = $state.get(at.test.APP_STATE_NAME);
-        ionState = $state.get(at.test.ION_STATE_NAME);
+        viewState = $state.get(at.test.VIEW_STATE_NAME);
     }));
 
     it('should be defined', () => {
@@ -46,18 +47,18 @@ describe('@RouteConfig', () => {
         expect(appState.template).to.be.equal(shouldTemplate);
     });
 
-    it(`should have ${at.test.ION_STATE_NAME}, with correct router configuration` , () => {
+    it(`should have ${at.test.VIEW_STATE_NAME}, with correct router configuration` , () => {
 
-        expect(ionState.url).to.equal(at.test.ION_STATE_URL);
-        expect(ionState.views).to.be.an('object');
-        expect(ionState.views.main).to.be.an('object');
-        expect(ionState.views.main.ionView).to.be.a('function');
-        expect(ionState.views.main.controller).to.equal(IonViewA);
-        expect(ionState.views.main.template).to.be.equal(at.test.ION_VIEW_A_TEMPLATE);
+        expect(viewState.url).to.equal(at.test.VIEW_STATE_URL);
+        expect(viewState.views).to.be.an('object');
+        expect(viewState.views.main).to.be.an('object');
+        expect(viewState.views.main.view).to.be.a('function');
+        expect(viewState.views.main.controller).to.equal(ViewA);
+        expect(viewState.views.main.template).to.be.equal(at.test.VIEW_VIEW_A_TEMPLATE);
 
-        expect(ionState.ionView).to.be.a('function');
-        expect(ionState.controller).to.equal(IonViewA);
-        expect(ionState.template).to.be.equal(at.test.ION_VIEW_A_TEMPLATE);
+        expect(viewState.view).to.be.a('function');
+        expect(viewState.controller).to.equal(ViewA);
+        expect(viewState.template).to.be.equal(at.test.VIEW_VIEW_A_TEMPLATE);
     });
 
 });

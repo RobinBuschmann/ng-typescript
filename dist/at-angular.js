@@ -229,24 +229,6 @@ var at;
 var at;
 (function (at) {
     /**
-     * Stores meta data for configuring a ionic view for
-     * ui.router through RouteConfig;
-     * Ionic framework is required.
-     *
-     * @param options
-     * @return {function(Function): void}
-     * @annotation
-     */
-    function IonView(options) {
-        return function (target) {
-            target['__ionView'] = options;
-        };
-    }
-    at.IonView = IonView;
-})(at || (at = {}));
-var at;
-(function (at) {
-    /**
      * Prepares "listener" attributes for component directives.
      * The consumer of the corresponding component can pass
      * event listeners to this attribute. This attribute is
@@ -414,7 +396,7 @@ var at;
                     processUrlRouterProviderOptions($urlRouterProvider);
                     angular.forEach(options.stateConfigs, function (config) {
                         // process config for unnamed view
-                        if ('component' in config || 'ionView' in config) {
+                        if ('component' in config || 'view' in config) {
                             processView(config);
                         }
                         // process configs for named views
@@ -447,23 +429,23 @@ var at;
                 }
                 config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
             }
-            else if (config.ionView) {
-                if (!config.ionView.__ionView) {
-                    throw new Error('Value for ionView attribute has to be a with @IonView decorated class');
+            else if (config.view) {
+                if (!config.view.__view) {
+                    throw new Error('Value for view attribute has to be a with @IonView decorated class');
                 }
-                config.controller = config.ionView;
-                if (config.ionView.__ionView.template) {
-                    config.template = config.ionView.__ionView.template;
+                config.controller = config.view;
+                if (config.view.__view.template) {
+                    config.template = config.view.__view.template;
                 }
-                else if (config.ionView.__ionView.templateUrl) {
-                    config.templateUrl = config.ionView.__ionView.templateUrl;
+                else if (config.view.__view.templateUrl) {
+                    config.templateUrl = config.view.__view.templateUrl;
                 }
                 else {
-                    throw new Error('Either template or templateUrl has to be defined for ionView');
+                    throw new Error('Either template or templateUrl has to be defined for view');
                 }
             }
             else {
-                throw new Error('View configuration needs either an ionView or component attribute');
+                throw new Error('View configuration needs either an view or component attribute');
             }
         }
         /**
@@ -606,5 +588,21 @@ var at;
         return at.instantiate(moduleName, serviceName, 'service');
     }
     at.Service = Service;
+})(at || (at = {}));
+var at;
+(function (at) {
+    /**
+     * Stores meta data for configuring a view for ui.router
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+     */
+    function View(options) {
+        return function (target) {
+            target['__view'] = options;
+        };
+    }
+    at.View = View;
 })(at || (at = {}));
 //# sourceMappingURL=at-angular.js.map

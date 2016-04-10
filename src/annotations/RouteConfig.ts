@@ -12,7 +12,7 @@ module at {
         /**
          * Class that is decorated by @IonView
          */
-        ionView?: Function;
+        view?: Function;
 
         /**
          * Name of the state
@@ -99,7 +99,7 @@ module at {
                     angular.forEach(options.stateConfigs, config => {
 
                         // process config for unnamed view
-                        if ('component' in config || 'ionView' in config) {
+                        if ('component' in config || 'view' in config) {
                             processView(config);
                         }
 
@@ -141,28 +141,28 @@ module at {
 
                 config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
 
-            } else if (config.ionView) {
+            } else if (config.view) {
 
-                if (!config.ionView.__ionView) {
-                    throw new Error('Value for ionView attribute has to be a with @IonView decorated class');
+                if (!config.view.__view) {
+                    throw new Error('Value for view attribute has to be a with @IonView decorated class');
                 }
 
-                config.controller = config.ionView;
+                config.controller = config.view;
 
-                if (config.ionView.__ionView.template) {
+                if (config.view.__view.template) {
 
-                    config.template = config.ionView.__ionView.template;
-                } else if (config.ionView.__ionView.templateUrl) {
+                    config.template = config.view.__view.template;
+                } else if (config.view.__view.templateUrl) {
 
-                    config.templateUrl = config.ionView.__ionView.templateUrl;
+                    config.templateUrl = config.view.__view.templateUrl;
                 } else {
 
-                    throw new Error('Either template or templateUrl has to be defined for ionView');
+                    throw new Error('Either template or templateUrl has to be defined for view');
                 }
 
             } else {
 
-                throw new Error('View configuration needs either an ionView or component attribute');
+                throw new Error('View configuration needs either an view or component attribute');
             }
         }
 

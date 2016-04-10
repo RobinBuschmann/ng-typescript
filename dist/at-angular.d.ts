@@ -88,22 +88,6 @@ declare module at {
     function Inject(...args: string[]): at.IClassAnnotationDecorator;
 }
 declare module at {
-    interface IViewOptions {
-        templateUrl?: string;
-        template?: string;
-    }
-    /**
-     * Stores meta data for configuring a ionic view for
-     * ui.router through RouteConfig;
-     * Ionic framework is required.
-     *
-     * @param options
-     * @return {function(Function): void}
-     * @annotation
-     */
-    function IonView(options: IViewOptions): at.IClassAnnotationDecorator;
-}
-declare module at {
     interface IListenerAttributeOptions {
         /**
          * @description Array of strings, which describes the parameters
@@ -189,7 +173,7 @@ declare module at {
         /**
          * Class that is decorated by @IonView
          */
-        ionView?: Function;
+        view?: Function;
         /**
          * Name of the state
          */
@@ -263,4 +247,18 @@ declare module at {
         (moduleName: string, serviceName: string): IClassAnnotationDecorator;
     }
     function Service(moduleName: string, serviceName: string): at.IClassAnnotationDecorator;
+}
+declare module at {
+    interface IViewOptions {
+        templateUrl?: string;
+        template?: string;
+    }
+    /**
+     * Stores meta data for configuring a view for ui.router
+     *
+     * @param options
+     * @return {function(Function): void}
+     * @annotation
+     */
+    function View(options: IViewOptions): at.IClassAnnotationDecorator;
 }

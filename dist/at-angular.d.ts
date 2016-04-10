@@ -41,6 +41,7 @@ declare module at {
         componentName: string;
         templateUrl?: string;
         template?: string;
+        transclude?: boolean;
         controllerAs?: string;
         moduleName?: string;
         module?: IModule;

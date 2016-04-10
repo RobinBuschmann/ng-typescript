@@ -12,6 +12,7 @@ module at {
         componentName: string;
         templateUrl?: string;
         template?: string;
+        transclude?: boolean;
         controllerAs?: string;
         moduleName?: string;
         module?: IModule;
@@ -87,7 +88,7 @@ module at {
 
                         // ensure that requiredCtrlInstances parameter is always an array
                         requiredCtrlInstances = requiredCtrlInstances ? [].concat(requiredCtrlInstances) : [];
-                        
+
                         // retrieve component instance from scope, through controllerAs name
                         const componentInstance = scope[config.controllerAs];
 

@@ -10,7 +10,7 @@ module at {
         component?: Function;
 
         /**
-         * Class that is decorated by @IonView
+         * Class that is decorated by @View
          */
         view?: Function;
 
@@ -125,7 +125,7 @@ module at {
         function processView(config) {
 
             if (config.component) {
-                
+
                 if (!config.component.__componentName) {
                     throw new Error('Value for component attribute has to be a with @Component decorated class');
                 }
@@ -144,22 +144,16 @@ module at {
             } else if (config.view) {
 
                 if (!config.view.__view) {
-                    throw new Error('Value for view attribute has to be a with @IonView decorated class');
+                    throw new Error('Value for view attribute has to be a with @View decorated class');
                 }
-
-                config.controller = config.view;
-
-                if (config.view.__view.template) {
-
-                    config.template = config.view.__view.template;
-                } else if (config.view.__view.templateUrl) {
-
-                    config.templateUrl = config.view.__view.templateUrl;
-                } else {
-
-                    throw new Error('Either template or templateUrl has to be defined for view');
+                
+                let viewConfig = config.view.__view;
+                
+                for(let key in viewConfig) {
+                    if(viewConfig.hasOwnProperty(key)) {
+                        config[key] = viewConfig[key];
+                    }
                 }
-
             } else {
 
                 throw new Error('View configuration needs either an view or component attribute');

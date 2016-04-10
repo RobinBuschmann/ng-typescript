@@ -5,6 +5,7 @@ module at {
     export interface IViewOptions {
         templateUrl?: string;
         template?: string;
+        controllerAs?: string;
     }
 
     /**
@@ -17,6 +18,8 @@ module at {
     export function View(options: IViewOptions): at.IClassAnnotationDecorator {
         return (target: Function) => {
 
+            if(!options.controllerAs) options.controllerAs = 'vm';
+            options['controller'] = target;
             target['__view'] = options;
         }
     }

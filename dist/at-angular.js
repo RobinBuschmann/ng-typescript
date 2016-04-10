@@ -431,17 +431,13 @@ var at;
             }
             else if (config.view) {
                 if (!config.view.__view) {
-                    throw new Error('Value for view attribute has to be a with @IonView decorated class');
+                    throw new Error('Value for view attribute has to be a with @View decorated class');
                 }
-                config.controller = config.view;
-                if (config.view.__view.template) {
-                    config.template = config.view.__view.template;
-                }
-                else if (config.view.__view.templateUrl) {
-                    config.templateUrl = config.view.__view.templateUrl;
-                }
-                else {
-                    throw new Error('Either template or templateUrl has to be defined for view');
+                var viewConfig = config.view.__view;
+                for (var key in viewConfig) {
+                    if (viewConfig.hasOwnProperty(key)) {
+                        config[key] = viewConfig[key];
+                    }
                 }
             }
             else {
@@ -600,6 +596,9 @@ var at;
      */
     function View(options) {
         return function (target) {
+            if (!options.controllerAs)
+                options.controllerAs = 'vm';
+            options['controller'] = target;
             target['__view'] = options;
         };
     }

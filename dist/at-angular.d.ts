@@ -171,7 +171,7 @@ declare module at {
          */
         component?: Function;
         /**
-         * Class that is decorated by @IonView
+         * Class that is decorated by @View
          */
         view?: Function;
         /**
@@ -252,6 +252,7 @@ declare module at {
     interface IViewOptions {
         templateUrl?: string;
         template?: string;
+        controllerAs?: string;
     }
     /**
      * Stores meta data for configuring a view for ui.router

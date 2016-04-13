@@ -7,6 +7,10 @@ module at {
         template?: string;
         controllerAs?: string;
     }
+    
+    interface IViewMeta extends IViewOptions {
+        controller?: Function;
+    }
 
     /**
      * Stores meta data for configuring a view for ui.router
@@ -17,10 +21,13 @@ module at {
      */
     export function View(options: IViewOptions): at.IClassAnnotationDecorator {
         return (target: Function) => {
+            
+            let viewMeta: IViewMeta = options;
 
-            if(!options.controllerAs) options.controllerAs = 'vm';
-            options['controller'] = target;
-            target['__view'] = options;
+            if(!viewMeta.controllerAs) viewMeta.controllerAs = 'vm';
+            viewMeta.controller = target;
+            
+            Reflect.defineMetadata('view', viewMeta, target);
         }
     }
 }

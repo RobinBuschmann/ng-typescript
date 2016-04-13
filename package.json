@@ -24,7 +24,9 @@
   "typescript": {
     "definition": "dist/at-angular.d.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "reflect-metadata": "git+https://github.com/rbuckton/ReflectDecorators.git"
+  },
   "devDependencies": {
     "angular": "^1.5.0",
     "angular-mocks": "^1.5.0",

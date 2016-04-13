@@ -39,17 +39,16 @@ var at;
     function Attribute(options) {
         if (options === void 0) { options = {}; }
         return function (target, key) {
-            // will be used in "component" annotation
-            if (!target.__componentAttributes) {
-                target.__componentAttributes = [];
+            var componentAttributesMeta = Reflect.getMetadata('componentAttributes', target.constructor);
+            if (!componentAttributesMeta) {
+                componentAttributesMeta = [];
+                Reflect.defineMetadata('componentAttributes', componentAttributesMeta, target.constructor);
             }
-            var metaData = angular.extend({}, defaultAttributeOptions, options);
-            metaData.propertyName = key;
-            metaData.name = options.name || key;
-            metaData.scopeHash = metaData.binding + (metaData.isOptional ? '?' : '') + (metaData.name);
-            target.__componentAttributes.push(metaData);
-            // Add attribute meta data to the component meta data;
-            target.__componentAttributes.push();
+            var attributeMeta = angular.extend({}, defaultAttributeOptions, options);
+            attributeMeta.propertyName = key;
+            attributeMeta.name = options.name || key;
+            attributeMeta.scopeHash = attributeMeta.binding + (attributeMeta.isOptional ? '?' : '') + (attributeMeta.name);
+            componentAttributesMeta.push(attributeMeta);
         };
     }
     at.Attribute = Attribute;
@@ -94,11 +93,12 @@ var at;
         return function (target) {
             var config = angular.extend({}, componentDefaultOptions, options || {});
             // store component name, to be accessible from native js object
-            target['__componentName'] = options.componentName;
+            var componentMeta = { name: options.componentName };
+            Reflect.defineMetadata('component', componentMeta, target);
             // attribute meta data is defined in Attribute annotation
-            var attributeMeta = target.prototype.__componentAttributes || [];
+            var attributeMeta = Reflect.getMetadata('componentAttributes', target) || [];
             // required controller meta data is defined in RequiredCtrl annotation
-            var requiredCtrlMeta = target.prototype.__requiredControllers || [];
+            var requiredCtrlMeta = Reflect.getMetadata('requiredControllers', target) || [];
             // add required elements to directive config
             config.require = requiredCtrlMeta.map(function (value) { return value.option; });
             // set target class as controller
@@ -268,12 +268,13 @@ var at;
        */
     function RequiredCtrl(option) {
         return function (target, key) {
-            // will be used in "component" annotation
-            if (!target.__requiredControllers) {
-                target.__requiredControllers = [];
+            var requiredControllersMeta = Reflect.getMetadata('requiredControllers', target.constructor);
+            if (!requiredControllersMeta) {
+                requiredControllersMeta = [];
+                Reflect.defineMetadata('requiredControllers', requiredControllersMeta, target.constructor);
             }
             // Add required controller meta data to the component meta data;
-            target.__requiredControllers.push({ key: key, option: option });
+            requiredControllersMeta.push({ key: key, option: option });
         };
     }
     at.RequiredCtrl = RequiredCtrl;
@@ -419,21 +420,23 @@ var at;
          */
         function processView(config) {
             if (config.component) {
-                if (!config.component.__componentName) {
+                var componentMeta = Reflect.getMetadata('component', config.component);
+                if (!componentMeta.name) {
                     throw new Error('Value for component attribute has to be a with @Component decorated class');
                 }
-                var attributeMeta = config.component.prototype.__componentAttributes || [];
+                var attributeMeta = Reflect.getMetadata('componentAttributes', config.component) || [];
                 checkToResolvedAttributes(attributeMeta, config.resolve);
                 if (config.resolve) {
                     config.controller = getController(attributeMeta, config.resolve);
                 }
-                config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
+                config.template = getTemplate(attributeMeta, componentMeta.name, config.resolve);
             }
             else if (config.view) {
-                if (!config.view.__view) {
+                var viewMeta = Reflect.getMetadata('view', config.view);
+                if (!viewMeta) {
                     throw new Error('Value for view attribute has to be a with @View decorated class');
                 }
-                var viewConfig = config.view.__view;
+                var viewConfig = viewMeta;
                 for (var key in viewConfig) {
                     if (viewConfig.hasOwnProperty(key)) {
                         config[key] = viewConfig[key];
@@ -596,10 +599,11 @@ var at;
      */
     function View(options) {
         return function (target) {
-            if (!options.controllerAs)
-                options.controllerAs = 'vm';
-            options['controller'] = target;
-            target['__view'] = options;
+            var viewMeta = options;
+            if (!viewMeta.controllerAs)
+                viewMeta.controllerAs = 'vm';
+            viewMeta.controller = target;
+            Reflect.defineMetadata('view', viewMeta, target);
         };
     }
     at.View = View;

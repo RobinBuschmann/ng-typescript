@@ -125,12 +125,14 @@ module at {
         function processView(config) {
 
             if (config.component) {
+                
+                let componentMeta = Reflect.getMetadata('component', config.component);
 
-                if (!config.component.__componentName) {
+                if (!componentMeta.name) {
                     throw new Error('Value for component attribute has to be a with @Component decorated class');
                 }
 
-                let attributeMeta = config.component.prototype.__componentAttributes || [];
+                let attributeMeta = Reflect.getMetadata('componentAttributes', config.component) || [];
 
                 checkToResolvedAttributes(attributeMeta, config.resolve);
 
@@ -139,15 +141,17 @@ module at {
                     config.controller = getController(attributeMeta, config.resolve);
                 }
 
-                config.template = getTemplate(attributeMeta, config.component.__componentName, config.resolve);
+                config.template = getTemplate(attributeMeta, componentMeta.name, config.resolve);
 
             } else if (config.view) {
 
-                if (!config.view.__view) {
+                let viewMeta = Reflect.getMetadata('view', config.view);
+
+                if (!viewMeta) {
                     throw new Error('Value for view attribute has to be a with @View decorated class');
                 }
                 
-                let viewConfig = config.view.__view;
+                let viewConfig = viewMeta;
                 
                 for(let key in viewConfig) {
                     if(viewConfig.hasOwnProperty(key)) {

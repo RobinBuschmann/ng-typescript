@@ -12,9 +12,7 @@
 
   "exclude": [
     "node_modules",
-    ".grunt-ts-tmp",
     "dist",
-    "documentation",
     "test"
   ]
 }

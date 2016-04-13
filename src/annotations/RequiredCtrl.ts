@@ -12,14 +12,17 @@ module at {
   export function RequiredCtrl(option: string): IMemberAnnotationDecorator {
 
     return (target: any, key: string) => {
+      
+      let requiredControllersMeta = Reflect.getMetadata('requiredControllers', target.constructor);
 
-      // will be used in "component" annotation
-      if (!target.__requiredControllers) {
-        target.__requiredControllers = [];
+      if(!requiredControllersMeta) {
+
+        requiredControllersMeta = [];
+        Reflect.defineMetadata('requiredControllers', requiredControllersMeta, target.constructor);
       }
 
       // Add required controller meta data to the component meta data;
-      target.__requiredControllers.push({key, option});
+      requiredControllersMeta.push({key, option});
     }
   }
 }

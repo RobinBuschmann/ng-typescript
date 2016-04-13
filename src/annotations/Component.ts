@@ -50,13 +50,15 @@ module at {
                 angular.extend({}, componentDefaultOptions, options || {});
 
             // store component name, to be accessible from native js object
-            target['__componentName'] = options.componentName;
+            let componentMeta = {name: options.componentName};
+            
+            Reflect.defineMetadata('component', componentMeta, target);
 
             // attribute meta data is defined in Attribute annotation
-            let attributeMeta = target.prototype.__componentAttributes || [];
+            let attributeMeta = Reflect.getMetadata('componentAttributes', target) || [];
 
             // required controller meta data is defined in RequiredCtrl annotation
-            let requiredCtrlMeta = target.prototype.__requiredControllers || [];
+            let requiredCtrlMeta = Reflect.getMetadata('requiredControllers', target) || [];
 
             // add required elements to directive config
             config.require = requiredCtrlMeta.map(value => value.option);

@@ -391,10 +391,12 @@ var at;
             if (!options || !(options.stateConfigs && options.stateConfigs.length) || !options.module) {
                 throw new Error('Options (stateConfigs, module) are missing for RouteConfig annotation');
             }
-            options.module.config(['$stateProvider', '$interpolateProvider', '$urlRouterProvider',
-                function ($stateProvider, $interpolateProvider, $urlRouterProvider) {
+            options.module.config(['$stateProvider', '$interpolateProvider', '$urlRouterProvider', '$injector',
+                function ($stateProvider, $interpolateProvider, $urlRouterProvider, $injector) {
                     _$interpolateProvider = $interpolateProvider;
                     processUrlRouterProviderOptions($urlRouterProvider);
+                    if (options.invokable)
+                        $injector.invoke(options.invokable);
                     angular.forEach(options.stateConfigs, function (config) {
                         // process config for unnamed view
                         if ('component' in config || 'view' in config) {

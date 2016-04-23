@@ -68,6 +68,7 @@ module at {
         conditions?: Array<{when: string|any, then: string|Function}>,
         rules?: Array<Function>,
         otherwise?: string|Function,
+        invokable?: Function|Array<string|Function>,
         deferIntercept?: boolean
     }
 
@@ -90,11 +91,12 @@ module at {
                 throw new Error('Options (stateConfigs, module) are missing for RouteConfig annotation');
             }
 
-            options.module.config(['$stateProvider', '$interpolateProvider', '$urlRouterProvider',
-                ($stateProvider, $interpolateProvider, $urlRouterProvider) => {
+            options.module.config(['$stateProvider', '$interpolateProvider', '$urlRouterProvider', '$injector',
+                ($stateProvider, $interpolateProvider, $urlRouterProvider, $injector) => {
 
                     _$interpolateProvider = $interpolateProvider;
                     processUrlRouterProviderOptions($urlRouterProvider);
+                    if(options.invokable) $injector.invoke(options.invokable);
 
                     angular.forEach(options.stateConfigs, config => {
 
@@ -125,7 +127,7 @@ module at {
         function processView(config) {
 
             if (config.component) {
-                
+
                 let componentMeta = Reflect.getMetadata('component', config.component);
 
                 if (!componentMeta.name) {
@@ -150,11 +152,11 @@ module at {
                 if (!viewMeta) {
                     throw new Error('Value for view attribute has to be a with @View decorated class');
                 }
-                
+
                 let viewConfig = viewMeta;
-                
-                for(let key in viewConfig) {
-                    if(viewConfig.hasOwnProperty(key)) {
+
+                for (let key in viewConfig) {
+                    if (viewConfig.hasOwnProperty(key)) {
                         config[key] = viewConfig[key];
                     }
                 }
@@ -194,6 +196,7 @@ module at {
                 angular.forEach(options.rules, rule => $urlRouterProvider.rule(rule));
             }
             if (options.otherwise) {
+
                 $urlRouterProvider.otherwise(options.otherwise);
             }
             if (options.deferIntercept !== void 0) {

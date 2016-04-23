@@ -230,6 +230,7 @@ declare module at {
         }>;
         rules?: Array<Function>;
         otherwise?: string | Function;
+        invokable?: Function | Array<string | Function>;
         deferIntercept?: boolean;
     }
     /**

@@ -12,6 +12,7 @@ module.exports = function (config) {
             './node_modules/reflect-metadata/Reflect.js',
             './dist/at-angular.js',
             './test/.tmp/module.js',
+            './test/.tmp/ServiceB.js',
             './test/.tmp/attr2Directive.js',
             './test/.tmp/attrDirective.js',
             './test/.tmp/ViewA.js',

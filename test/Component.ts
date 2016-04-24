@@ -10,7 +10,7 @@ namespace at.test {
         componentName: COMPONENT_NAME,
         moduleName: MODULE_NAME
     })
-    @at.Inject('serviceA', 'serviceB')
+    @at.Inject('serviceA', ServiceB)
     export class Component implements at.IPostLink, at.IPreLink, at.IDestroy{
 
         @at.RequiredCtrl('^attr')

@@ -4,9 +4,7 @@
 
 namespace at.test {
 
-    export const SERVICE_B_NAME = 'serviceB';
-
-    @at.Service(MODULE_NAME, SERVICE_B_NAME)
+    @at.Service(at.test.module)
     export class ServiceB {
 
     }

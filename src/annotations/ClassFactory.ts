@@ -4,9 +4,9 @@ module at {
         (moduleName: string, className: string): IClassAnnotationDecorator;
     }
 
-    export function ClassFactory(module: ng.IModule, className: string): at.IClassAnnotationDecorator;
-    export function ClassFactory(moduleName: string, className: string): at.IClassAnnotationDecorator;
-    export function ClassFactory(any: any, className: string): at.IClassAnnotationDecorator {
+    export function ClassFactory(module: ng.IModule, className?: string): at.IClassAnnotationDecorator;
+    export function ClassFactory(moduleName: string, className?: string): at.IClassAnnotationDecorator;
+    export function ClassFactory(any: any, className?: string): at.IClassAnnotationDecorator {
         return (target: any): void => {
             function factory(...args: any[]): any {
                 return at.AttachInjects(target, ...args);
@@ -16,11 +16,8 @@ module at {
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
             }
-            
-            let module = angular.isObject(any) ? any : angular.module(any);
 
-            module.factory(className, factory);
-            defineInjectNameMeta(className, target, 'factory');
+            instantiate(any, className, 'factory')(factory);
         };
     }
 }

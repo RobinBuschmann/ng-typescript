@@ -17,7 +17,7 @@ describe('@Inject', () => {
 
     it('should assign proper $inject array to service constructor', () => {
 
-        expect(at.test.Controller.$inject).to.deep.equal([at.test.SERVICE_A_NAME, at.test.SERVICE_B_NAME]);
+        expect(at.test.Controller.$inject[0]).to.deep.equal(at.test.SERVICE_A_NAME);
     });
 
     it('should have public accessable dependencies', () => {

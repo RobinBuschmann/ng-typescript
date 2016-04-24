@@ -35,16 +35,30 @@ module at {
 
         Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
     }
+    
+    // This should prevent collision with other external modules,
+    // which also uses the angular-typescript module
+    // (initially created by http://stackoverflow.com/a/8084248/931502
+    // and advanced by http://stackoverflow.com/users/1704773/luke)
+    const APP_KEY = Math.random().toString(36).substr(2, 8);
+    let count = 1; // the counter prevents internal collisions
+    function getIdentifier(moduleName) {
+        return moduleName + APP_KEY + (count++);
+    }
 
     export function instantiate(module: ng.IModule, name: string, mode: string): IClassAnnotationDecorator;
     export function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator;
     export function instantiate(any: any, name: string, mode: string): IClassAnnotationDecorator {
         return (target: any): void => {
 
-            defineInjectNameMeta(name, target, mode);
-
             let module = angular.isObject(any) ? any : angular.module(any);
-
+            
+            // generate inject name if necessary
+            name = name || getIdentifier(module.name);
+            
+            // store inject name via reflect-metadata
+            defineInjectNameMeta(name, target, mode);
+            
             module[mode](name, target);
         };
     }

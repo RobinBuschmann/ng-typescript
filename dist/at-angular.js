@@ -18,10 +18,22 @@ var at;
         Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
     }
     at.defineInjectNameMeta = defineInjectNameMeta;
+    // This should prevent collision with other external modules,
+    // which also uses the angular-typescript module
+    // (initially created by http://stackoverflow.com/a/8084248/931502
+    // and advanced by http://stackoverflow.com/users/1704773/luke)
+    var APP_KEY = Math.random().toString(36).substr(2, 8);
+    var count = 1; // the counter prevents internal collisions
+    function getIdentifier(moduleName) {
+        return moduleName + APP_KEY + (count++);
+    }
     function instantiate(any, name, mode) {
         return function (target) {
-            defineInjectNameMeta(name, target, mode);
             var module = angular.isObject(any) ? any : angular.module(any);
+            // generate inject name if necessary
+            name = name || getIdentifier(module.name);
+            // store inject name via reflect-metadata
+            defineInjectNameMeta(name, target, mode);
             module[mode](name, target);
         };
     }
@@ -87,9 +99,7 @@ var at;
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
             }
-            var module = angular.isObject(any) ? any : angular.module(any);
-            module.factory(className, factory);
-            at.defineInjectNameMeta(className, target, 'factory');
+            at.instantiate(any, className, 'factory')(factory);
         };
     }
     at.ClassFactory = ClassFactory;
@@ -217,7 +227,7 @@ var at;
                 var _a;
                 /* istanbul ignore next */
             }, { controller: target, scope: Boolean(target.templateUrl) });
-            module.directive(directiveName, function () { return (config); });
+            at.instantiate(any, directiveName, 'directive')(function () { return (config); });
         };
     }
     at.Directive = Directive;

@@ -6,7 +6,7 @@ namespace at.test {
     export const CONTROLLER_NAME = 'controller';
 
     @at.Controller(MODULE_NAME, CONTROLLER_NAME)
-    @at.Inject('serviceA', 'serviceB')
+    @at.Inject('serviceA', ServiceB)
     export class Controller {
 
         name: string;

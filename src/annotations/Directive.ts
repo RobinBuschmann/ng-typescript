@@ -39,8 +39,8 @@ module at {
                     config;
                 /* istanbul ignore next */
             }, {controller: target, scope: Boolean(target.templateUrl)});
-
-            module.directive(directiveName, () => (config));
+            
+            instantiate(any, directiveName, 'directive')(() => (config));
         };
     }
 }

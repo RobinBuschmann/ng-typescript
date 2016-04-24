@@ -11,7 +11,7 @@ namespace at.test {
 
         name: string;
 
-        constructor(@at.Inject('serviceB') public serviceB: at.test.ServiceB) {
+        constructor(@at.Inject(at.test.ServiceB) public serviceB: at.test.ServiceB) {
 
             this.name = SERVICE_A_NAME;
         }

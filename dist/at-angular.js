@@ -252,7 +252,23 @@ var at;
 var at;
 (function (at) {
     /**
-     * Prepares "listener" attributes for component directives.
+     * Prepares input attribute for component directives.
+     *
+     * @param options
+     * @return {function(any, string): void}
+     * @annotation
+       */
+    function Input(options) {
+        if (options === void 0) { options = {}; }
+        options.binding = '=';
+        return at.Attribute(options);
+    }
+    at.Input = Input;
+})(at || (at = {}));
+var at;
+(function (at) {
+    /**
+     * Prepares output attributes for component directives.
      * The consumer of the corresponding component can pass
      * event listeners to this attribute. This attribute is
      * defined for a specified action. Every time this action
@@ -262,14 +278,14 @@ var at;
      * @return {IMemberAnnotationDecorator}
      * @annotation
        */
-    function ListenerAttribute(options) {
+    function Output(options) {
         if (options === void 0) { options = {}; }
         // Attribute defaults for listener
         options.isOptional = true;
         options.binding = '&';
         return at.Attribute(options);
     }
-    at.ListenerAttribute = ListenerAttribute;
+    at.Output = Output;
 })(at || (at = {}));
 var at;
 (function (at) {

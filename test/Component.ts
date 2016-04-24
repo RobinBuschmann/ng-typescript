@@ -19,13 +19,13 @@ namespace at.test {
         @at.RequiredCtrl('^attr2')
         attr2Ctrl: Attr2Controller;
 
-        @at.Attribute()
+        @at.Input()
         someAttribute: string;
 
         @at.Attribute({name: 'anotherAttribute'})
         anotherNum: number;
 
-        @at.ListenerAttribute({eventParamNames: ['$someAttribute']})
+        @at.Output({eventParamNames: ['$someAttribute']})
         someListener: (params: {$someAttribute: string}) => {};
 
         constructor() {

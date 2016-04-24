@@ -1,15 +1,17 @@
 module at {
 
-  export interface IListenerAttributeOptions {
+  export interface IOutputOptions {
 
     /**
      * @description Array of strings, which describes the parameters
-     *              that should be added to the event listener
+     *              that should be added to the event listener, if 
+     *              the output component is used for resolve in
+     *              RouteConfig.
      * @example
      *
      *          In component class:
      *
-     *          @ListenerAttribute({eventParamNames: ['$someObj']})
+     *          @Output({eventParamNames: ['$someObj']})
      *
      *          In html:
      *
@@ -20,7 +22,7 @@ module at {
   }
 
   /**
-   * Prepares "listener" attributes for component directives.
+   * Prepares output attributes for component directives.
    * The consumer of the corresponding component can pass
    * event listeners to this attribute. This attribute is
    * defined for a specified action. Every time this action
@@ -30,7 +32,7 @@ module at {
    * @return {IMemberAnnotationDecorator}
    * @annotation
      */
-  export function ListenerAttribute(options: IListenerAttributeOptions = {}): IMemberAnnotationDecorator {
+  export function Output(options: IOutputOptions = {}): IMemberAnnotationDecorator {
 
     // Attribute defaults for listener
     (<IAttributeOptions>options).isOptional = true;

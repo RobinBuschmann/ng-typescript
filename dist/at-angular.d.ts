@@ -97,15 +97,31 @@ declare module at {
     function Inject(...args: Array<string | Function>): at.IClassAnnotationDecorator;
 }
 declare module at {
-    interface IListenerAttributeOptions {
+    interface IInputOptions {
+        name?: string;
+        isOptional?: boolean;
+    }
+    /**
+     * Prepares input attribute for component directives.
+     *
+     * @param options
+     * @return {function(any, string): void}
+     * @annotation
+       */
+    function Input(options?: IInputOptions): IMemberAnnotationDecorator;
+}
+declare module at {
+    interface IOutputOptions {
         /**
          * @description Array of strings, which describes the parameters
-         *              that should be added to the event listener
+         *              that should be added to the event listener, if
+         *              the output component is used for resolve in
+         *              RouteConfig.
          * @example
          *
          *          In component class:
          *
-         *          @ListenerAttribute({eventParamNames: ['$someObj']})
+         *          @Output({eventParamNames: ['$someObj']})
          *
          *          In html:
          *
@@ -115,7 +131,7 @@ declare module at {
         name?: string;
     }
     /**
-     * Prepares "listener" attributes for component directives.
+     * Prepares output attributes for component directives.
      * The consumer of the corresponding component can pass
      * event listeners to this attribute. This attribute is
      * defined for a specified action. Every time this action
@@ -125,7 +141,7 @@ declare module at {
      * @return {IMemberAnnotationDecorator}
      * @annotation
        */
-    function ListenerAttribute(options?: IListenerAttributeOptions): IMemberAnnotationDecorator;
+    function Output(options?: IOutputOptions): IMemberAnnotationDecorator;
 }
 declare module at {
     interface IProviderAnnotation {

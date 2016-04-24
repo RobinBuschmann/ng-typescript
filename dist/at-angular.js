@@ -18,10 +18,11 @@ var at;
         Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
     }
     at.defineInjectNameMeta = defineInjectNameMeta;
-    function instantiate(moduleName, name, mode) {
+    function instantiate(any, name, mode) {
         return function (target) {
             defineInjectNameMeta(name, target, mode);
-            angular.module(moduleName)[mode](name, target);
+            var module = angular.isObject(any) ? any : angular.module(any);
+            module[mode](name, target);
         };
     }
     at.instantiate = instantiate;
@@ -73,7 +74,7 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
-    function ClassFactory(moduleName, className) {
+    function ClassFactory(any, className) {
         return function (target) {
             function factory() {
                 var args = [];
@@ -86,7 +87,8 @@ var at;
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
             }
-            angular.module(moduleName).factory(className, factory);
+            var module = angular.isObject(any) ? any : angular.module(any);
+            module.factory(className, factory);
             at.defineInjectNameMeta(className, target, 'factory');
         };
     }
@@ -177,8 +179,8 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
-    function Controller(moduleName, ctrlName) {
-        return at.instantiate(moduleName, ctrlName, 'controller');
+    function Controller(any, ctrlName) {
+        return at.instantiate(any, ctrlName, 'controller');
     }
     at.Controller = Controller;
 })(at || (at = {}));
@@ -200,13 +202,14 @@ var at;
         'terminal',
         'transclude'
     ];
-    function Directive(moduleName, directiveName) {
+    function Directive(any, directiveName) {
         return function (target) {
+            var module = angular.isObject(any) ? any : angular.module(any);
             var config;
             var ctrlName = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
             /* istanbul ignore else */
             if (ctrlName) {
-                at.Controller(moduleName, ctrlName)(target);
+                at.Controller(module.name, ctrlName)(target);
             }
             config = directiveProperties.reduce(function (config, property) {
                 return angular.isDefined(target[property]) ? angular.extend(config, (_a = {}, _a[property] = target[property], _a)) :
@@ -214,15 +217,15 @@ var at;
                 var _a;
                 /* istanbul ignore next */
             }, { controller: target, scope: Boolean(target.templateUrl) });
-            angular.module(moduleName).directive(directiveName, function () { return (config); });
+            module.directive(directiveName, function () { return (config); });
         };
     }
     at.Directive = Directive;
 })(at || (at = {}));
 var at;
 (function (at) {
-    function Factory(moduleName, serviceName) {
-        return at.instantiate(moduleName, serviceName, 'factory');
+    function Factory(any, serviceName) {
+        return at.instantiate(any, serviceName, 'factory');
     }
     at.Factory = Factory;
 })(at || (at = {}));
@@ -270,8 +273,8 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
-    function Provider(moduleName, serviceName) {
-        return at.instantiate(moduleName, serviceName, 'provider');
+    function Provider(any, serviceName) {
+        return at.instantiate(any, serviceName, 'provider');
     }
     at.Provider = Provider;
 })(at || (at = {}));
@@ -605,8 +608,8 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
-    function Service(moduleName, serviceName) {
-        return at.instantiate(moduleName, serviceName, 'service');
+    function Service(any, serviceName) {
+        return at.instantiate(any, serviceName, 'service');
     }
     at.Service = Service;
 })(at || (at = {}));

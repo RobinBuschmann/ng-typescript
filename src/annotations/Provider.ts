@@ -5,7 +5,9 @@ module at {
         (moduleName: string, serviceName: string): IClassAnnotationDecorator;
     }
 
-    export function Provider(moduleName: string, serviceName: string): at.IClassAnnotationDecorator {
-        return instantiate(moduleName, serviceName, 'provider');
+    export function Provider(module: ng.IModule, serviceName: string): at.IClassAnnotationDecorator;
+    export function Provider(moduleName: string, serviceName: string): at.IClassAnnotationDecorator;
+    export function Provider(any: any, serviceName: string): at.IClassAnnotationDecorator {
+        return instantiate(any, serviceName, 'provider');
     }
 }

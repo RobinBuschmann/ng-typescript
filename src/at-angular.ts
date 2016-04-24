@@ -29,7 +29,6 @@ module at {
         let fn = dependencies.pop();
 
         return retrieveInjectNames(dependencies).concat(fn);
-
     }
 
     export function defineInjectNameMeta(injectName, target, mode) {
@@ -37,12 +36,16 @@ module at {
         Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
     }
 
-    export function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator {
+    export function instantiate(module: ng.IModule, name: string, mode: string): IClassAnnotationDecorator;
+    export function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator;
+    export function instantiate(any: any, name: string, mode: string): IClassAnnotationDecorator {
         return (target: any): void => {
 
             defineInjectNameMeta(name, target, mode);
 
-            angular.module(moduleName)[mode](name, target);
+            let module = angular.isObject(any) ? any : angular.module(any);
+
+            module[mode](name, target);
         };
     }
 }

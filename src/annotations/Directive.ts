@@ -22,13 +22,16 @@ module at {
         (moduleName: string, directiveName: string): IClassAnnotationDecorator;
     }
 
-    export function Directive(moduleName: string, directiveName: string): at.IClassAnnotationDecorator {
+    export function Directive(module: ng.IModule, directiveName: string): at.IClassAnnotationDecorator;
+    export function Directive(moduleName: string, directiveName: string): at.IClassAnnotationDecorator;
+    export function Directive(any: any, directiveName: string): at.IClassAnnotationDecorator {
         return (target: any): void => {
+            let module = angular.isObject(any) ? any : angular.module(any);
             let config: angular.IDirective;
             const ctrlName: string = angular.isString(target.controller) ? target.controller.split(' ').shift() : null;
             /* istanbul ignore else */
             if (ctrlName) {
-                Controller(moduleName, ctrlName)(target);
+                Controller(module.name, ctrlName)(target);
             }
             config = directiveProperties.reduce((config: angular.IDirective,
                                                  property: string) => {
@@ -37,7 +40,7 @@ module at {
                 /* istanbul ignore next */
             }, {controller: target, scope: Boolean(target.templateUrl)});
 
-            angular.module(moduleName).directive(directiveName, () => (config));
+            module.directive(directiveName, () => (config));
         };
     }
 }

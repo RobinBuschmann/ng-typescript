@@ -1,8 +1,26 @@
 var at;
 (function (at) {
     'use strict';
+    function retrieveInjectNames(values) {
+        return values.map(function (value) { return angular.isString(value) ? value : Reflect.getMetadata('injectName', value); });
+    }
+    at.retrieveInjectNames = retrieveInjectNames;
+    function invokable() {
+        var dependencies = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            dependencies[_i - 0] = arguments[_i];
+        }
+        var fn = dependencies.pop();
+        return retrieveInjectNames(dependencies).concat(fn);
+    }
+    at.invokable = invokable;
+    function defineInjectNameMeta(injectName, target, mode) {
+        Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
+    }
+    at.defineInjectNameMeta = defineInjectNameMeta;
     function instantiate(moduleName, name, mode) {
         return function (target) {
+            defineInjectNameMeta(name, target, mode);
             angular.module(moduleName)[mode](name, target);
         };
     }
@@ -69,6 +87,7 @@ var at;
                 factory.$inject = target.$inject.slice(0);
             }
             angular.module(moduleName).factory(className, factory);
+            at.defineInjectNameMeta(className, target, 'factory');
         };
     }
     at.ClassFactory = ClassFactory;
@@ -215,6 +234,7 @@ var at;
             args[_i - 0] = arguments[_i];
         }
         return function (target, key, index) {
+            args = at.retrieveInjectNames(args);
             if (angular.isNumber(index)) {
                 target.$inject = target.$inject || [];
                 target.$inject[index] = args[0];

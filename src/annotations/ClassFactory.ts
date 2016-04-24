@@ -1,4 +1,3 @@
-
 module at {
 
     export interface IClassFactoryAnnotation {
@@ -15,7 +14,9 @@ module at {
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
             }
+
             angular.module(moduleName).factory(className, factory);
+            defineInjectNameMeta(className, target, 'factory');
         };
     }
 }

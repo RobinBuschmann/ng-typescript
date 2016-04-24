@@ -9,6 +9,9 @@ declare module at {
     interface IMemberAnnotationDecorator {
         (target: any, key: string): void;
     }
+    function retrieveInjectNames(values: Array<string | Function>): any[];
+    function invokable(...dependencies: Array<string | Function>): any[];
+    function defineInjectNameMeta(injectName: any, target: any, mode: any): void;
     function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator;
 }
 declare module at {
@@ -86,7 +89,7 @@ declare module at {
     interface IInjectAnnotation {
         (...args: any[]): IClassAnnotationDecorator;
     }
-    function Inject(...args: string[]): at.IClassAnnotationDecorator;
+    function Inject(...args: Array<string | Function>): at.IClassAnnotationDecorator;
 }
 declare module at {
     interface IListenerAttributeOptions {

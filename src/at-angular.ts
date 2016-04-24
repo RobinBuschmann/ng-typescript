@@ -1,4 +1,3 @@
-
 // Support AMD require
 // and SystemJS import
 declare module 'at' {
@@ -20,8 +19,29 @@ module at {
         (target: any, key: string): void;
     }
 
+    export function retrieveInjectNames(values: Array<string|Function>) {
+
+        return values.map(value => angular.isString(value) ? value : Reflect.getMetadata('injectName', value));
+    }
+
+    export function invokable(...dependencies: Array<string|Function>) {
+
+        let fn = dependencies.pop();
+
+        return retrieveInjectNames(dependencies).concat(fn);
+
+    }
+
+    export function defineInjectNameMeta(injectName, target, mode) {
+
+        Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
+    }
+
     export function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator {
         return (target: any): void => {
+
+            defineInjectNameMeta(name, target, mode);
+
             angular.module(moduleName)[mode](name, target);
         };
     }

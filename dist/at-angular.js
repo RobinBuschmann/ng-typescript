@@ -1,10 +1,48 @@
 var at;
 (function (at) {
     'use strict';
+    /**
+     * Retrieves injectNames from specified classes,
+     * to generate an array, which only consists of
+     * inject names
+     *
+     * @param values
+     * @return {string|Function|any[]}
+     */
     function retrieveInjectNames(values) {
-        return values.map(function (value) { return angular.isString(value) ? value : Reflect.getMetadata('injectName', value); });
+        return values.map(function (value) {
+            if (angular.isString(value)) {
+                return value;
+            }
+            var injectName = Reflect.getMetadata('injectName', value);
+            if (!injectName) {
+                throw new Error("Specified class '" + getFunctionName(value) + "' has no meta data for injectName");
+            }
+            return injectName;
+        });
     }
     at.retrieveInjectNames = retrieveInjectNames;
+    /**
+     * Helper method to get name of function
+     *
+     * @param fn
+     * @return {any}
+     */
+    function getFunctionName(fn) {
+        if (fn.name) {
+            return fn.name;
+        }
+        return /^function\s+([\w\$]+)\s*\(/.exec(fn.toString())[1];
+    }
+    /**
+     * A helper method to generate an annotated function
+     * in the old angular way. This accepts beside strings
+     * annotated classes.
+     *
+     *
+     * @param dependencies
+     * @return {string|Function[]|string|Function|any[]}
+     */
     function invokable() {
         var dependencies = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -14,30 +52,55 @@ var at;
         return retrieveInjectNames(dependencies).concat(fn);
     }
     at.invokable = invokable;
-    function defineInjectNameMeta(injectName, target, mode) {
-        Reflect.defineMetadata('injectName', mode === 'provider' ? injectName + 'Provider' : injectName, target);
-    }
-    at.defineInjectNameMeta = defineInjectNameMeta;
-    // This should prevent collision with other external modules,
-    // which also uses the angular-typescript module
-    // (initially created by http://stackoverflow.com/a/8084248/931502
-    // and advanced by http://stackoverflow.com/users/1704773/luke)
-    var APP_KEY = Math.random().toString(36).substr(2, 8);
-    var count = 1; // the counter prevents internal collisions
-    function getIdentifier(moduleName) {
-        return moduleName + APP_KEY + (count++);
-    }
-    function instantiate(any, name, mode) {
+    /**
+     * This generates an identifier for any app component
+     * (services, providers, factories, controllers).
+     * To ensure, that each component gets an unique
+     * identifier, an autoincrement numerical value
+     * is used. To prevent collision with external
+     * modules, the identifier consists of the components
+     * module name, which already has to be unique
+     * regarding other modules.
+     *
+     * @param moduleName
+     * @return {string}
+     */
+    at.createIdentifier = (function () {
+        var count = 1; // the counter prevents internal collisions
+        return function (moduleName) { return moduleName + '-' + (count++); };
+    }());
+    /**
+     * Processes annotations for services, providers, factories and controllers.
+     * Stores meta data for injectName for each class and initializes each
+     * component with specified module.
+     *
+     * @param any
+     * @param name
+     * @param mode
+     * @param providedServiceClass
+     * @param create
+     * @return {function(any): void}
+     */
+    function process(any, name, mode, providedServiceClass, create) {
+        if (create === void 0) { create = true; }
         return function (target) {
             var module = angular.isObject(any) ? any : angular.module(any);
-            // generate inject name if necessary
-            name = name || getIdentifier(module.name);
+            // if Provider annotation passes provided service class,
+            // retrieve inject name from service
+            if (providedServiceClass) {
+                name = Reflect.getMetadata('injectName', providedServiceClass);
+            }
+            else {
+                // generate inject name if necessary
+                name = name || at.createIdentifier(module.name);
+            }
             // store inject name via reflect-metadata
-            defineInjectNameMeta(name, target, mode);
-            module[mode](name, target);
+            Reflect.defineMetadata('injectName', mode === 'provider' ? name + 'Provider' : name, target);
+            if (create)
+                module[mode](name, target);
         };
     }
-    at.instantiate = instantiate;
+    at.process = process;
 })(at || (at = {}));
 var at;
 (function (at) {
@@ -99,7 +162,13 @@ var at;
             if (target.$inject && target.$inject.length > 0) {
                 factory.$inject = target.$inject.slice(0);
             }
-            at.instantiate(any, className, 'factory')(factory);
+            var module = angular.isObject(any) ? any : angular.module(any);
+            // generate inject name if necessary
+            className = className || at.createIdentifier(module.name);
+            // store inject name via reflect-metadata
+            // to target, not factory
+            Reflect.defineMetadata('injectName', className, target);
+            module.factory(className, factory);
         };
     }
     at.ClassFactory = ClassFactory;
@@ -190,7 +259,7 @@ var at;
 var at;
 (function (at) {
     function Controller(any, ctrlName) {
-        return at.instantiate(any, ctrlName, 'controller');
+        return at.process(any, ctrlName, 'controller');
     }
     at.Controller = Controller;
 })(at || (at = {}));
@@ -227,7 +296,7 @@ var at;
                 var _a;
                 /* istanbul ignore next */
             }, { controller: target, scope: Boolean(target.templateUrl) });
-            at.instantiate(any, directiveName, 'directive')(function () { return (config); });
+            at.process(any, directiveName, 'directive')(function () { return (config); });
         };
     }
     at.Directive = Directive;
@@ -235,7 +304,7 @@ var at;
 var at;
 (function (at) {
     function Factory(any, serviceName) {
-        return at.instantiate(any, serviceName, 'factory');
+        return at.process(any, serviceName, 'factory');
     }
     at.Factory = Factory;
 })(at || (at = {}));
@@ -299,8 +368,15 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
-    function Provider(any, serviceName) {
-        return at.instantiate(any, serviceName, 'provider');
+    function ProvidedService(any, serviceName) {
+        return at.process(any, serviceName, 'service', void 0, false);
+    }
+    at.ProvidedService = ProvidedService;
+})(at || (at = {}));
+var at;
+(function (at) {
+    function Provider(any, service) {
+        return at.process(any, angular.isString(service) ? service : void 0, 'provider', angular.isFunction(service) ? service : void 0);
     }
     at.Provider = Provider;
 })(at || (at = {}));
@@ -635,7 +711,7 @@ var at;
 var at;
 (function (at) {
     function Service(any, serviceName) {
-        return at.instantiate(any, serviceName, 'service');
+        return at.process(any, serviceName, 'service');
     }
     at.Service = Service;
 })(at || (at = {}));

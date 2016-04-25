@@ -9,11 +9,52 @@ declare module at {
     interface IMemberAnnotationDecorator {
         (target: any, key: string): void;
     }
+    /**
+     * Retrieves injectNames from specified classes,
+     * to generate an array, which only consists of
+     * inject names
+     *
+     * @param values
+     * @return {string|Function|any[]}
+     */
     function retrieveInjectNames(values: Array<string | Function>): any[];
+    /**
+     * A helper method to generate an annotated function
+     * in the old angular way. This accepts beside strings
+     * annotated classes.
+     *
+     *
+     * @param dependencies
+     * @return {string|Function[]|string|Function|any[]}
+     */
     function invokable(...dependencies: Array<string | Function>): any[];
-    function defineInjectNameMeta(injectName: any, target: any, mode: any): void;
-    function instantiate(module: ng.IModule, name: string, mode: string): IClassAnnotationDecorator;
-    function instantiate(moduleName: string, name: string, mode: string): IClassAnnotationDecorator;
+    /**
+     * This generates an identifier for any app component
+     * (services, providers, factories, controllers).
+     * To ensure, that each component gets an unique
+     * identifier, an autoincrement numerical value
+     * is used. To prevent collision with external
+     * modules, the identifier consists of the components
+     * module name, which already has to be unique
+     * regarding other modules.
+     *
+     * @param moduleName
+     * @return {string}
+     */
+    const createIdentifier: (moduleName: any) => string;
+    /**
+     * Processes annotations for services, providers, factories and controllers.
+     * Stores meta data for injectName for each class and initializes each
+     * component with specified module.
+     *
+     * @param any
+     * @param name
+     * @param mode
+     * @param providedServiceClass
+     * @param create
+     * @return {function(any): void}
+     */
+    function process(any: any, name: string, mode: string, providedServiceClass?: Function, create?: boolean): IClassAnnotationDecorator;
 }
 declare module at {
     function AttachInjects(target: any, ...args: any[]): any;
@@ -34,9 +75,6 @@ declare module at {
     function Attribute(options?: IAttributeOptions): IMemberAnnotationDecorator;
 }
 declare module at {
-    interface IClassFactoryAnnotation {
-        (moduleName: string, className: string): IClassAnnotationDecorator;
-    }
     function ClassFactory(module: ng.IModule, className?: string): at.IClassAnnotationDecorator;
     function ClassFactory(moduleName: string, className?: string): at.IClassAnnotationDecorator;
 }
@@ -70,9 +108,6 @@ declare module at {
     function Component(options: IComponentOptions): at.IClassAnnotationDecorator;
 }
 declare module at {
-    interface IControllerAnnotation {
-        (moduleName: string, ctrlName: string): IClassAnnotationDecorator;
-    }
     function Controller(module: ng.IModule, ctrlName?: string): at.IClassAnnotationDecorator;
     function Controller(moduleName: string, ctrlName?: string): at.IClassAnnotationDecorator;
 }
@@ -84,9 +119,6 @@ declare module at {
     function Directive(moduleName: string, directiveName: string): at.IClassAnnotationDecorator;
 }
 declare module at {
-    interface IFactoryAnnotation {
-        (moduleName: string, serviceName: string): IClassAnnotationDecorator;
-    }
     function Factory(module: ng.IModule, serviceName?: string): at.IClassAnnotationDecorator;
     function Factory(moduleName: string, serviceName?: string): at.IClassAnnotationDecorator;
 }
@@ -144,11 +176,14 @@ declare module at {
     function Output(options?: IOutputOptions): IMemberAnnotationDecorator;
 }
 declare module at {
-    interface IProviderAnnotation {
-        (moduleName: string, serviceName: string): IClassAnnotationDecorator;
-    }
+    function ProvidedService(module: ng.IModule, serviceName?: string): at.IClassAnnotationDecorator;
+    function ProvidedService(moduleName: string, serviceName?: string): at.IClassAnnotationDecorator;
+}
+declare module at {
     function Provider(module: ng.IModule, serviceName?: string): at.IClassAnnotationDecorator;
+    function Provider(module: ng.IModule, providedServiceClass?: Function): at.IClassAnnotationDecorator;
     function Provider(moduleName: string, serviceName?: string): at.IClassAnnotationDecorator;
+    function Provider(moduleName: string, providedServiceClass?: Function): at.IClassAnnotationDecorator;
 }
 declare module at {
     /**
@@ -270,9 +305,6 @@ declare module at {
     function RouteConfig(options: IRouteConfigOptions): at.IClassAnnotationDecorator;
 }
 declare module at {
-    interface IServiceAnnotation {
-        (moduleName: string, serviceName: string): IClassAnnotationDecorator;
-    }
     function Service(module: ng.IModule, serviceName?: string): at.IClassAnnotationDecorator;
     function Service(moduleName: string, serviceName?: string): at.IClassAnnotationDecorator;
 }

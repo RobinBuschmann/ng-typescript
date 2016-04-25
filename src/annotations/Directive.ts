@@ -40,7 +40,7 @@ module at {
                 /* istanbul ignore next */
             }, {controller: target, scope: Boolean(target.templateUrl)});
             
-            instantiate(any, directiveName, 'directive')(() => (config));
+            process(any, directiveName, 'directive')(() => (config));
         };
     }
 }

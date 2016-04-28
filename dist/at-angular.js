@@ -258,6 +258,17 @@ var at;
 })(at || (at = {}));
 var at;
 (function (at) {
+    function Config(any, inlineAnnotatedFunction) {
+        return function (target) {
+            var module = angular.isObject(any) ? any : angular.module(any);
+            inlineAnnotatedFunction = at.invokable.apply(at.invokable, inlineAnnotatedFunction);
+            module.config(inlineAnnotatedFunction);
+        };
+    }
+    at.Config = Config;
+})(at || (at = {}));
+var at;
+(function (at) {
     function Controller(any, ctrlName) {
         return at.process(any, ctrlName, 'controller');
     }

@@ -5,7 +5,7 @@ module at {
     }
 
     export function Inject(...args: Array<string|Function>): at.IClassAnnotationDecorator {
-        return (target: any, key?: string, index?: number): void => {
+        return (target: any, key?: string, index?: any): void => {
 
             args = retrieveInjectNames(args);
 

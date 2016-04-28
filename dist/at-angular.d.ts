@@ -4,7 +4,7 @@ declare module 'at' {
 declare module at {
     interface IClassAnnotationDecorator {
         (target: any): void;
-        (t: any, key: string, index: number): void;
+        (t: any, key: string, index: any): void;
     }
     interface IMemberAnnotationDecorator {
         (target: any, key: string): void;
@@ -106,6 +106,10 @@ declare module at {
      * @annotation
      */
     function Component(options: IComponentOptions): at.IClassAnnotationDecorator;
+}
+declare module at {
+    function Config(module: ng.IModule, inlineAnnotatedFunction: any[]): at.IClassAnnotationDecorator;
+    function Config(moduleName: string, inlineAnnotatedFunction: any[]): at.IClassAnnotationDecorator;
 }
 declare module at {
     function Controller(module: ng.IModule, ctrlName?: string): at.IClassAnnotationDecorator;

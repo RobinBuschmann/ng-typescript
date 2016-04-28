@@ -11,7 +11,7 @@ module at {
     /* tslint:disable:no-any */
     export interface IClassAnnotationDecorator {
         (target: any): void;
-        (t: any, key: string, index: number): void;
+        (t: any, key: string, index: any): void;
     }
 
     /* tslint:disable:no-any */

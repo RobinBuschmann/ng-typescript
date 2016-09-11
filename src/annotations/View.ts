@@ -6,8 +6,12 @@ module at {
         templateUrl?: string;
         template?: string;
         controllerAs?: string;
+
+        // See Component directives property for
+        // explanation
+        directives?: Array<any>;
     }
-    
+
     interface IViewMeta extends IViewOptions {
         controller?: Function;
     }
@@ -21,12 +25,12 @@ module at {
      */
     export function View(options: IViewOptions): at.IClassAnnotationDecorator {
         return (target: Function) => {
-            
+
             let viewMeta: IViewMeta = options;
 
             if(!viewMeta.controllerAs) viewMeta.controllerAs = 'vm';
             viewMeta.controller = target;
-            
+
             Reflect.defineMetadata('view', viewMeta, target);
         }
     }

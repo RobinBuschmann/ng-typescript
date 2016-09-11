@@ -88,6 +88,7 @@ declare module at {
         controllerAs?: string;
         moduleName?: string;
         module?: IModule;
+        directives?: Array<any>;
     }
     interface IPreLink {
         onPreLink: (element?: JQuery) => void;
@@ -317,6 +318,7 @@ declare module at {
         templateUrl?: string;
         template?: string;
         controllerAs?: string;
+        directives?: Array<any>;
     }
     /**
      * Stores meta data for configuring a view for ui.router

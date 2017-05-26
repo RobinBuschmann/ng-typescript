@@ -1,37 +1,21 @@
-module at {
+import {IViewOptions} from "../interfaces/IViewOptions";
+import {VIEW_KEY} from "../ng-typescript";
 
-    import IModule = angular.IModule;
+interface IViewMeta extends IViewOptions {
+    controller?: Function;
+}
 
-    export interface IViewOptions {
-        templateUrl?: string;
-        template?: string;
-        controllerAs?: string;
+/**
+ * Stores meta data for configuring a view for ui.router
+ */
+export function View(options: IViewOptions): ClassDecorator {
+    return (target: Function) => {
 
-        // See Component directives property for
-        // explanation
-        directives?: Array<any>;
-    }
+        let viewMeta: IViewMeta = options;
 
-    interface IViewMeta extends IViewOptions {
-        controller?: Function;
-    }
+        if (!viewMeta.controllerAs) viewMeta.controllerAs = 'vm';
+        viewMeta.controller = target;
 
-    /**
-     * Stores meta data for configuring a view for ui.router
-     *
-     * @param options
-     * @return {function(Function): void}
-     * @annotation
-     */
-    export function View(options: IViewOptions): at.IClassAnnotationDecorator {
-        return (target: Function) => {
-
-            let viewMeta: IViewMeta = options;
-
-            if(!viewMeta.controllerAs) viewMeta.controllerAs = 'vm';
-            viewMeta.controller = target;
-
-            Reflect.defineMetadata('view', viewMeta, target);
-        }
+        Reflect.defineMetadata(VIEW_KEY, viewMeta, target);
     }
 }

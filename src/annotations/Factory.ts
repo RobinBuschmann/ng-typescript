@@ -1,9 +1,8 @@
+import {process} from "../ng-typescript";
 
-module at {
-    
-    export function Factory(module: ng.IModule, serviceName?: string): at.IClassAnnotationDecorator;
-    export function Factory(moduleName: string, serviceName?: string): at.IClassAnnotationDecorator;
-    export function Factory(any: any, serviceName?: string): at.IClassAnnotationDecorator {
-        return process(any, serviceName, 'factory');
-    }
+export function Factory(module: ng.IModule, serviceName?: string): ClassDecorator;
+export function Factory(moduleName: string, serviceName?: string): ClassDecorator;
+export function Factory(any: any, serviceName?: string): ClassDecorator {
+
+    return process(any, serviceName, 'factory');
 }

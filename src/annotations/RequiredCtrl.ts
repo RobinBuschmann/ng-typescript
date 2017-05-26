@@ -1,28 +1,23 @@
-module at {
+import {REQUIRED_CTRL_KEY} from "../ng-typescript";
 
-  /**
-   * Processes required controller for components property.
-   * Property is initialized with controller instance
-   * of required component or directive through preLink.
-   *
-   * @param option Name of component or directive with require specification (^, ^^)
-   * @return {function(any, string): void}
-   * @constructor
-     */
-  export function RequiredCtrl(option: string): IMemberAnnotationDecorator {
+/**
+ * Processes required controller for components property.
+ * Property is initialized with controller instance
+ * of required component or directive through preLink.
+ */
+export function RequiredCtrl(option: string): PropertyDecorator {
 
     return (target: any, key: string) => {
-      
-      let requiredControllersMeta = Reflect.getMetadata('requiredControllers', target.constructor);
 
-      if(!requiredControllersMeta) {
+        let requiredControllersMeta = Reflect.getMetadata(REQUIRED_CTRL_KEY, target);
 
-        requiredControllersMeta = [];
-        Reflect.defineMetadata('requiredControllers', requiredControllersMeta, target.constructor);
-      }
+        if (!requiredControllersMeta) {
 
-      // Add required controller meta data to the component meta data;
-      requiredControllersMeta.push({key, option});
+            requiredControllersMeta = [];
+            Reflect.defineMetadata(REQUIRED_CTRL_KEY, requiredControllersMeta, target);
+        }
+
+        // Add required controller meta data to the component meta data;
+        requiredControllersMeta.push({key, option});
     }
-  }
 }

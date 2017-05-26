@@ -1,46 +1,35 @@
+import  * as angular from 'angular';
+import {IAttributeOptions} from "../interfaces/IAttributeOptions";
+import {COMPONENT_ATTR_KEY} from "../ng-typescript";
 
-
-module at {
-
-
-  export interface IAttributeOptions {
-    binding?: string;
-    name?: string;
-    isOptional?: boolean;
-  }
-
-  const defaultAttributeOptions = {
+const defaultAttributeOptions = {
     binding: '=',
     name: '',
     isOptional: false
-  };
+};
 
-  /**
-   * Prepares attributes for component directives.
-   *
-   * @param options
-   * @return {function(any, string): void}
-   * @annotation
-     */
-  export function Attribute(options: IAttributeOptions = {}): IMemberAnnotationDecorator {
+/**
+ * Prepares attributes for component directives.
+ * @annotation
+ */
+export function Attribute(options: IAttributeOptions = {}): PropertyDecorator {
 
     return (target: any, key: string) => {
-      
-      let componentAttributesMeta = Reflect.getMetadata('componentAttributes', target.constructor);
-      
-      if(!componentAttributesMeta) {
 
-        componentAttributesMeta = [];
-        Reflect.defineMetadata('componentAttributes', componentAttributesMeta, target.constructor);
-      }
-      
-      let attributeMeta = angular.extend({}, defaultAttributeOptions, options);
+        let componentAttributesMeta = Reflect.getMetadata(COMPONENT_ATTR_KEY, target);
 
-      attributeMeta.propertyName = key;
-      attributeMeta.name = options.name || key;
-      attributeMeta.scopeHash = attributeMeta.binding + (attributeMeta.isOptional ? '?' : '') + (attributeMeta.name);
+        if (!componentAttributesMeta) {
 
-      componentAttributesMeta.push(attributeMeta);
+            componentAttributesMeta = [];
+            Reflect.defineMetadata(COMPONENT_ATTR_KEY, componentAttributesMeta, target);
+        }
+
+        const attributeMeta = angular.extend({}, defaultAttributeOptions, options);
+
+        attributeMeta.propertyName = key;
+        attributeMeta.name = options.name || key;
+        attributeMeta.scopeHash = attributeMeta.binding + (attributeMeta.isOptional ? '?' : '') + (attributeMeta.name);
+
+        componentAttributesMeta.push(attributeMeta);
     }
-  }
 }

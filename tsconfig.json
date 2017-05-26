@@ -1,18 +1,20 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
     "target": "es5",
+    "module": "amd",
+    "moduleResolution": "node",
     "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "sourceMap": true,
-    "rootDir": "src/",
+    "rootDir": "src",
     "pretty": true,
-    "outFile": "dist/at-angular.js"
+    "outFile": "index.js"
   },
-
   "exclude": [
     "node_modules",
-    "dist",
+    "_test",
     "test"
   ]
 }

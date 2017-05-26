@@ -1,28 +1,31 @@
-module at {
+import * as angular from 'angular';
+import {createIdentifier, INJECT_NAME_KEY, INLINE_INJECTS} from "../ng-typescript";
 
-    export function ClassFactory(module: ng.IModule, className?: string): at.IClassAnnotationDecorator;
-    export function ClassFactory(moduleName: string, className?: string): at.IClassAnnotationDecorator;
-    export function ClassFactory(any: any, className?: string): at.IClassAnnotationDecorator {
-        return (target: any): void => {
-            function factory(...args: any[]): any {
-                return at.AttachInjects(target, ...args);
-            }
+export function ClassFactory(module: ng.IModule, className?: string): ClassDecorator;
+export function ClassFactory(moduleName: string, className?: string): ClassDecorator;
+export function ClassFactory(any: any, className?: string): ClassDecorator {
 
-            /* istanbul ignore else */
-            if (target.$inject && target.$inject.length > 0) {
-                factory.$inject = target.$inject.slice(0);
-            }
-            
-            let module = angular.isObject(any) ? any : angular.module(any);
+    return (target: any): void => {
 
-            // generate inject name if necessary
-            className = className || createIdentifier(module.name);
+        const inlineInjects = Reflect.getMetadata(INLINE_INJECTS, target.prototype) || [];
 
-            // store inject name via reflect-metadata
-            // to target, not factory
-            Reflect.defineMetadata('injectName', className, target);
-            
-            module.factory(className, factory)
-        };
-    }
+        factory.$inject = inlineInjects.map(({injectName}) => injectName);
+
+        function factory(...args: any[]): any {
+
+            inlineInjects.forEach(({key}, index) => target.prototype[key] = args[index]);
+
+            return target;
+        }
+
+        const module = angular.isObject(any) ? any : angular.module(any);
+
+        // generate inject name if necessary
+        className = className || createIdentifier(module.name);
+
+        // store inject name via reflect-metadata
+        Reflect.defineMetadata(INJECT_NAME_KEY, className, target);
+
+        module.factory(className, factory)
+    };
 }

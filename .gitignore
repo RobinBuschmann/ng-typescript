@@ -1,19 +1,18 @@
-# Logs
+# logs
 logs
 *.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-
-# IDE directory
+# ide
 .idea
 
-# Teemporary directory
+# tmps
 coverage/
 test/.tmp/
+.fusebox
 
-# Dependency directory
+# libs
 node_modules/
-bower_components/
+
+**/*.js
+**/*.js.map
+**/*.d.ts
